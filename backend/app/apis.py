@@ -141,7 +141,7 @@ def get_profile_picture(
     if profile and profile.profile_picture and os.path.exists(profile.profile_picture):
         file_path = profile.profile_picture
     else:
-        file_path = "/home/jasper/workspace/GelbApp/backend/app/assets/no_profile.jpg" 
+        file_path = "/home/jasper/workspace/officialapp/backend/app/assets/no_profile.jpg"
 
     if not os.path.exists(file_path):
         raise HTTPException(status_code=500, detail="Default profile picture missing")
@@ -655,7 +655,7 @@ def get_profile_picture_by_username(username: str, db: Session = Depends(get_db)
     if profile and profile.profile_picture and os.path.exists(profile.profile_picture):
         file_path = profile.profile_picture
     else:
-        file_path = "/home/jasper/workspace/GelbApp/backend/app/assets/no_profile.jpg" 
+        file_path = "/home/jasper/workspace/officialapp/backend/app/assets/no_profile.jpg" 
 
     if not os.path.exists(file_path):
         raise HTTPException(status_code=500, detail="Default profile picture missing")
