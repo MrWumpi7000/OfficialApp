@@ -3,11 +3,17 @@ from fastapi.staticfiles import StaticFiles
 from app.apis import router  # Import the router from apis.py
 from app.database import Base, engine  # Import Base and engine to create the database tables
 from fastapi.middleware.cors import CORSMiddleware
+from app.models import Round, RoundPlayer, Gelbfeld  # Import your models to ensure they are registered with SQLAlchemy
 import os
 
 Base.metadata.create_all(bind=engine)
 
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 app = FastAPI()
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
