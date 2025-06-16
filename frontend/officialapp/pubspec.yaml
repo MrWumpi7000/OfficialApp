@@ -28,6 +28,9 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  flutter_svg: ^2.2.0
+
+
   http: ^1.4.0
   image_picker: ^1.0.4
   shared_preferences: ^2.2.2
@@ -51,6 +54,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
+    - assets/startProgress_page1.png
+    - assets/StartRegisterPage0.jpg
+    - assets/pfadForRegister.svg
 
 flutter_icons:
   android: true

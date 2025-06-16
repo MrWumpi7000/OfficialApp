@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart'; // Adjust the path based on your structure
+import '../../services/auth_service.dart'; // Adjust the path based on your structure
 
-class RegisterPage extends StatefulWidget {
+class LoginPage extends StatefulWidget {
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  
-  final _emailController = TextEditingController();
+class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   bool _obscurePassword = true;
   bool _isButtonDisabled = false;
-
   String? _authError;
 
   @override
@@ -55,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(height: 30),
                     TextFormField(
                       decoration: InputDecoration(
-                        labelText: 'Username',
+                        labelText: 'Username or Email',
                         labelStyle: TextStyle(color: Colors.white),
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFFFEDD37), width: 2.0),
@@ -66,35 +63,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your username';
+                          return 'Please enter your username or email';
                         }
                         return null;
                       },
                       style: TextStyle(color: Colors.white),
                       cursorColor: Color(0xFFFEDD37),
                       controller: _usernameController,
-                    ),
-                    SizedBox(height: 30),
-                                        TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        labelStyle: TextStyle(color: Colors.white),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFFEDD37), width: 2.0),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white24),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        return null;
-                      },
-                      style: TextStyle(color: Colors.white),
-                      cursorColor: Color(0xFFFEDD37),
-                      controller: _emailController,
                     ),
                     SizedBox(height: 30),
                     TextFormField(
@@ -150,9 +125,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                     _authError = null; // clear error
                                   });
                                 final authService = AuthService();
-                                final success = await authService.register(
+                                final success = await authService.login(
                                   _usernameController.text,
-                                  _emailController.text,
                                   _passwordController.text,
                                 );
 
@@ -163,7 +137,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   Navigator.pushReplacementNamed(context, '/');
                                 } else {
                                   setState(() {
-                                    _authError = 'Error registering. Please try again.';
+                                    _authError = 'Invalid username or password. Please try again.';
                                   });
                                 }
                                 
@@ -183,14 +157,28 @@ class _RegisterPageState extends State<RegisterPage> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : Text('Register', style: TextStyle(color: Colors.white)),
+                          : Text('Login', style: TextStyle(color: Colors.white)),
                     )
                     ),
                     SizedBox(height: 40),
                     Center(
-                      child: TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/login'),
-                        child: Text('Already have an account?', style: TextStyle(color: Colors.grey[400])),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              // Navigate or handle logic
+                            },
+                            child: Text(
+                              'Forgot Password?',
+                              style: TextStyle(color: Colors.grey[400]),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pushNamed(context, '/register'),
+                            child: Text('Create Account?', style: TextStyle(color: Colors.grey[400])),
+                          ),
+                        ],
                       ),
                     ),
                   ],

@@ -5,13 +5,15 @@ import 'pages/friends_page.dart';
 import 'pages/statistics_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/create_lobby_page.dart';
-import 'pages/login_page.dart';
-import 'pages/register_page.dart';
+import 'pages/user_regristration/login_page.dart';
+import 'pages/user_regristration/register_page.dart';
 import 'widgets/protected_page.dart';
 import 'services/handle_reload.dart';
 import 'pages/play_page.dart';
 import 'services/version_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'pages/user_regristration/startProgress_page.dart';
+import 'pages/user_regristration/StartRegisterPage0.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -65,6 +67,15 @@ class MyApp extends StatelessWidget {
           builder: (_) => LoginPage(),
           settings: settings,
         );
+      
+      case "/start-progress":
+      return MaterialPageRoute(builder: (_) => StartprogressPage(),
+      settings: settings,);
+      
+      case "/start-register":
+      return MaterialPageRoute(builder: (_) => StartRegisterPage0(),
+      settings: settings,);
+      
       case '/register':
         return MaterialPageRoute(
           builder: (_) => RegisterPage(),
