@@ -1,0 +1,16 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light light grey background -->
+  <rect width="64" height="64" rx="32" fill="#F3F3F3"/>
+  <!-- Simple camera body -->
+  <rect x="16" y="26" width="32" height="18" rx="4" fill="#BDBDBD"/>
+  <!-- Simple lens -->
+  <circle cx="32" cy="35" r="5" fill="#9E9E9E"/>
+  <!-- Simple camera "top" (viewfinder) -->
+  <rect x="26" y="22" width="12" height="6" rx="2" fill="#BDBDBD"/>
+  <!-- Add button -->
+  <g>
+    <circle cx="48" cy="48" r="10" fill="#6246EA" stroke="white" stroke-width="2"/>
+    <rect x="46.5" y="43" width="3" height="10" rx="1.5" fill="white"/>
+    <rect x="43" y="46.5" width="10" height="3" rx="1.5" fill="white"/>
+  </g>
+</svg>

@@ -101,7 +101,7 @@ class _StartprogressPage extends State<StartprogressPage> {
                 const SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, "/start-progress");
+                    Navigator.pushNamed(context, "/start-register");
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6246EA),

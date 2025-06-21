@@ -6,7 +6,6 @@ import 'pages/statistics_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/create_lobby_page.dart';
 import 'pages/user_regristration/login_page.dart';
-import 'pages/user_regristration/register_page.dart';
 import 'widgets/protected_page.dart';
 import 'services/handle_reload.dart';
 import 'pages/play_page.dart';
@@ -14,6 +13,10 @@ import 'services/version_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/user_regristration/startProgress_page.dart';
 import 'pages/user_regristration/StartRegisterPage0.dart';
+import 'pages/user_regristration/1RegisterPage.dart';
+import 'pages/user_regristration/2RegisterPage.dart';
+import 'pages/user_regristration/3RegisterPage.dart';
+import 'pages/user_regristration/4RegisterPage.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,8 +35,8 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       title: 'officialapp',
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFFEDD37),
-        primarySwatch: Colors.yellow,
+        scaffoldBackgroundColor: const Color(0xFF6246EA),
+        primarySwatch: Colors.purple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       onGenerateRoute: _getRoute,
@@ -67,7 +70,31 @@ class MyApp extends StatelessWidget {
           builder: (_) => LoginPage(),
           settings: settings,
         );
-      
+
+      case '/register1':
+      return MaterialPageRoute(
+        builder: (_) => RegisterPage1(),
+        settings: settings,
+      );
+
+      case '/register2':
+      return MaterialPageRoute(
+        builder: (_) => RegisterPage2(),
+        settings: settings,
+      );
+
+      case '/register3':
+      return MaterialPageRoute(
+        builder: (_) => RegisterPage3(),
+        settings: settings,
+      );
+
+      case '/register4':
+      return MaterialPageRoute(
+        builder: (_) => RegisterPage4(),
+        settings: settings,
+      );
+
       case "/start-progress":
       return MaterialPageRoute(builder: (_) => StartprogressPage(),
       settings: settings,);
@@ -75,12 +102,7 @@ class MyApp extends StatelessWidget {
       case "/start-register":
       return MaterialPageRoute(builder: (_) => StartRegisterPage0(),
       settings: settings,);
-      
-      case '/register':
-        return MaterialPageRoute(
-          builder: (_) => RegisterPage(),
-          settings: settings,
-        );
+
       default:
         if (settings.name != null && settings.name!.startsWith('/play/')) {
           final uri = Uri.parse(settings.name!);

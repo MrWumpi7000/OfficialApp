@@ -107,7 +107,7 @@ class _StartRegisterPage0 extends State<StartRegisterPage0> {
                   width: 325,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, "/start-register");
+                      Navigator.pushNamed(context, "/register1");
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6246EA),

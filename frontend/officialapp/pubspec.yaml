@@ -29,10 +29,11 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   flutter_svg: ^2.2.0
-
+  image_picker: ^1.0.7
+  flutter_date_pickers: ^0.4.3
+  intl: ^0.20.2
 
   http: ^1.4.0
-  image_picker: ^1.0.4
   shared_preferences: ^2.2.2
   flutter:
     sdk: flutter
@@ -42,7 +43,6 @@ dependencies:
   package_info_plus: ^8.3.0
   url_launcher: ^6.1.14
   version: ^3.0.2
-  intl: ^0.19.0 
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.3
@@ -57,6 +57,17 @@ flutter:
     - assets/startProgress_page1.png
     - assets/StartRegisterPage0.jpg
     - assets/pfadForRegister.svg
+    - assets/envelope-heart-bw_Version2.svg
+    - assets/envelope-heart-color_Version2.svg
+    - assets/smiley-bw_Version2.svg
+    - assets/smiley-color_Version2.svg
+    - assets/calendar-bw_Version2.svg
+    - assets/calendar-color_Version2.svg
+    - assets/checklist-bw_Version2.svg
+    - assets/checklist-color_Version2.svg
+    - assets/paperplane-bw_Version2.svg
+    - assets/paperplane-color_Version2.svg
+    - assets/simple_camera_add.svg
 
 flutter_icons:
   android: true
