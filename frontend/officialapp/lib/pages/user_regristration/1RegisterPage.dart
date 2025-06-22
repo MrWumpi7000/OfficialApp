@@ -75,23 +75,26 @@ class _RegisterPage1State extends State<RegisterPage1> {
           const SizedBox(height: 20),
 
           Spacer(),
-          SizedBox(
-            width: 360,
-            child: ElevatedButton(
-              onPressed: _isValidEmail ? nextStep : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6246EA),
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
+            child: SizedBox(
+              width: 360,
+              child: ElevatedButton(
+                onPressed: _isValidEmail ? nextStep : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6246EA),
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
-              ),
-              child: const Text(
-                "Next",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500),
+                child: const Text(
+                  "Next",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
             ),
           ),

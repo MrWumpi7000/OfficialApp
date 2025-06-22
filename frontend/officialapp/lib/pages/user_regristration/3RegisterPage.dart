@@ -50,7 +50,7 @@ class _RegisterPage3State extends State<RegisterPage3> {
   void nextStep() {
     if (!_canProceed) return;
     if (currentStep < 4) setState(() => currentStep++);
-    Navigator.pushReplacementNamed(context, '/register3');
+    Navigator.pushReplacementNamed(context, '/register4');
   }
 
   void prevStep() {

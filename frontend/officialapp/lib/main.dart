@@ -17,6 +17,9 @@ import 'pages/user_regristration/1RegisterPage.dart';
 import 'pages/user_regristration/2RegisterPage.dart';
 import 'pages/user_regristration/3RegisterPage.dart';
 import 'pages/user_regristration/4RegisterPage.dart';
+import 'pages/user_regristration/5RegisterPage.dart';
+import 'pages/user_regristration/6RegisterPage.dart';
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,6 +95,18 @@ class MyApp extends StatelessWidget {
       case '/register4':
       return MaterialPageRoute(
         builder: (_) => RegisterPage4(),
+        settings: settings,
+      );
+
+      case '/register5':
+      return MaterialPageRoute(
+        builder: (_) => RegisterPage5(),
+        settings: settings,
+      );
+
+      case '/register6':
+      return MaterialPageRoute(
+        builder: (_) => RegisterPage6(),
         settings: settings,
       );
 
