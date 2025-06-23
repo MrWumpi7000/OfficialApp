@@ -1,0 +1,3 @@
+# Ignore the email utils Python file
+email_utils.py
+backend/app/emailutils.py
