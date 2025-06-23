@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/ChainProgressBar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage1 extends StatefulWidget {
   @override
@@ -9,7 +10,7 @@ class RegisterPage1 extends StatefulWidget {
 class _RegisterPage1State extends State<RegisterPage1> {
   int currentStep = 0;
   final TextEditingController _emailController = TextEditingController();
-
+  String email = "";
   bool get _isValidEmail {
     final email = _emailController.text.trim();
     // Basic email validation
@@ -18,6 +19,10 @@ class _RegisterPage1State extends State<RegisterPage1> {
 
   void nextStep() {
     if (currentStep < 4) setState(() => currentStep++);
+    email = _emailController.text.trim();
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('email', email);
+    });
     Navigator.pushReplacementNamed(context, '/register2');
   }
 

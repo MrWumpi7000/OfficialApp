@@ -6,6 +6,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class RegisterPage3 extends StatefulWidget {
   @override
@@ -47,11 +49,25 @@ class _RegisterPage3State extends State<RegisterPage3> {
     }
   }
 
-  void nextStep() {
+  void nextStep() async {
     if (!_canProceed) return;
     if (currentStep < 4) setState(() => currentStep++);
+
+    String name = _nameController.text.trim();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('name', name);
+
+    if (_imageFile != null) {
+      // Read image bytes and store as base64 for mobile
+      final bytes = await _imageFile!.readAsBytes();
+      prefs.setString('profile_image_data', base64Encode(bytes));
+    } else if (_webImage != null) {
+      prefs.setString('profile_image_data', base64Encode(_webImage!));
+    }
+
     Navigator.pushReplacementNamed(context, '/register4');
   }
+
 
   void prevStep() {
     if (currentStep > 0) setState(() => currentStep--);

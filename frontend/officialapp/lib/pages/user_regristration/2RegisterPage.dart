@@ -29,6 +29,7 @@ class _RegisterPage2State extends State<RegisterPage2> {
 
   void onCodeChanged(String value) {
     setState(() => code = value);
+    print("Code changed: $code");
     // TODO: Implement your code validation logic here
   }
 

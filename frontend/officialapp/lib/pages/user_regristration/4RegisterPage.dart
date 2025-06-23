@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:officialapp/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/ChainProgressBar.dart';
 import '../../widgets/DatePickerDropdown.dart';
+import '../../services/auth_service.dart';
 
 class RegisterPage4 extends StatefulWidget {
   @override
@@ -10,6 +13,7 @@ class RegisterPage4 extends StatefulWidget {
 class _RegisterPage4State extends State<RegisterPage4> {
   int currentStep = 2;
   DateTime? _selectedDate;
+  bool success = false;
 
   bool get _isOldEnough {
     if (_selectedDate == null) return false;
@@ -18,11 +22,21 @@ class _RegisterPage4State extends State<RegisterPage4> {
     return age >= 18;
   }
 
-  void nextStep() {
+  Future<void> nextStep() async {
     if (_selectedDate != null && _isOldEnough) {
-      print("Selected birthday: ${_selectedDate!.toIso8601String()}"); // Print ISO format
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('birthday', _selectedDate!.toIso8601String());
+
       if (currentStep < 4) setState(() => currentStep++);
-      Navigator.pushReplacementNamed(context, '/register5');
+      
+      success = await AuthService().register();
+      if (success) {
+        Navigator.pushReplacementNamed(context, '/register5');
+      } else {
+        Navigator.pushReplacementNamed(context, '/register1');
+      }
+
     }
   }
 

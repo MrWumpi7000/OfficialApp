@@ -109,9 +109,9 @@ class AuthService {
     }
   }
 
-  Future<bool> register(String username, String email, String password) async {
+  Future<bool> register() async {
     final url = Uri.parse('$_baseUrl/register');
-
+    final prefs = await SharedPreferences.getInstance();
     final response = await http.post(
       url,
       headers: {
@@ -119,16 +119,16 @@ class AuthService {
         'Accept': 'application/json',
       },
       body: jsonEncode({
-        'username': username,
-        'email': email,
-        'password': password,
+        'username': prefs.getString('name'),
+        'email': prefs.getString('email'),
+        'birthday': prefs.getString('birthday'),
+        'profile_image_data' : prefs.getString('profile_image_data'),
       }),
     );
     
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final token = data['access_token'];
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', token);
       return true;
     } else {
