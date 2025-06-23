@@ -1,6 +1,7 @@
 import bcrypt
 from jose import JWTError, jwt # type: ignore
 from datetime import datetime, timedelta
+import random
 
 SECRET_KEY = "Testing"  # ⚠️ Replace with a secure value in production
 ALGORITHM = "HS256"
@@ -31,3 +32,5 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
+def generate_numeric_code(length=6):
+    return ''.join(random.choices("0123456789", k=length))
