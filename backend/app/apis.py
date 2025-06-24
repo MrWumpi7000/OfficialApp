@@ -42,20 +42,48 @@ def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
 
     # Fix: parse birthday string to date or datetime
     try:
-        birthday = datetime.strptime(request.birthday, "%Y-%m-%dT%H:%M:%S.%f").date()  # or just .date() if your model uses Date
+        birthday = datetime.strptime(request.birthday, "%Y-%m-%dT%H:%M:%S.%f").date()
     except ValueError:
-        birthday = datetime.strptime(request.birthday, "%Y-%m-%d").date()  # fallback if no time is sent
+        birthday = datetime.strptime(request.birthday, "%Y-%m-%d").date()
+
+    # Hash the password before storing it
+    hashed_password = hash_password(request.password)
+
+    # Prepare for saving image after commit
+    profile_image_extension = request.profile_image_extension.lower() if request.profile_image_extension else None
 
     db_user = User(
         username=request.username,
         email=request.email, 
         birthday=birthday,
-        profile_image_data=request.profile_image_data,
-        six_digit_code=code
+        # We'll set these after saving the file:
+        profile_image_data=None,
+        progile_image_extension=profile_image_extension,
+        six_digit_code=code,
+        password=hashed_password,
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    # Save the image file if provided
+    if request.profile_image_data and profile_image_extension:
+        try:
+            image_data = base64.b64decode(request.profile_image_data)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid base64 image data")
+
+        # Ensure uploads directory exists
+        upload_dir = "uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        filename = f"user_{db_user.id}.{profile_image_extension}"
+        file_path = os.path.join(upload_dir, filename)
+        with open(file_path, "wb") as f:
+            f.write(image_data)
+
+        # Save only the filename in the db (or the relative path if you prefer)
+        db_user.profile_image_data = filename
+        db.commit()
 
     access_token = create_access_token(data={"email": request.email})
 
@@ -65,6 +93,9 @@ def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
 def send_verification_code(request: EmailRequest, db: Session = Depends(get_db)):
     code = generate_numeric_code(6)
     # Upsert: if entry exists, update code; else, create new
+    email_exists = db.query(User).filter(User.email == request.email).first()
+    if email_exists:
+        raise HTTPException(status_code=400, detail="Email already registered")
     entry = db.query(VerificationCode).filter(VerificationCode.email == request.email).first()
     if entry:
         entry.code = code

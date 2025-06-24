@@ -5,7 +5,7 @@ from app.database import Base, engine  # Import Base and engine to create the da
 from fastapi.middleware.cors import CORSMiddleware
 from app.models import User  # Import your models to ensure they are registered with SQLAlchemy
 import os
-from app.emailutils import test_send_mail, test_send_mail_ssl
+
 Base.metadata.create_all(bind=engine)
 
 UPLOAD_DIR = "uploads"
@@ -24,6 +24,3 @@ app.add_middleware(
 )
 # Include the router with the API routes
 app.include_router(router)
-
-test_send_mail()  # Test sending email using STARTTLS on port 587
-test_send_mail_ssl()  # Test sending email using SSL on port 465    
