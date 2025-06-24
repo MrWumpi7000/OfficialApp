@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/ChainProgressBar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage6 extends StatefulWidget {
   @override
@@ -8,9 +9,10 @@ class RegisterPage6 extends StatefulWidget {
 }
 
 class _RegisterPage6State extends State<RegisterPage6> {
+  SharedPreferences? prefs;
   int currentStep = 4;
   String _partnerCode = "";
-  String _yourCode = "A1B2C3"; // Example code, now includes letters
+  String _yourCode = ""; // Will be loaded asynchronously
 
   void nextStep() {
     if (currentStep < 4) setState(() => currentStep++);
@@ -31,6 +33,19 @@ class _RegisterPage6State extends State<RegisterPage6> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Share feature not implemented.")),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadYourCode();
+  }
+
+  Future<void> _loadYourCode() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _yourCode = prefs?.getString('sixDigitCode') ?? "";
+    });
   }
 
   @override

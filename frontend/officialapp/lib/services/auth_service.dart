@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:officialapp/pages/user_regristration/6RegisterPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' as io;
 import 'package:flutter/material.dart';
@@ -10,75 +11,6 @@ import 'package:http_parser/http_parser.dart';
 import 'package:version/version.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-class LeaderboardEntry {
-  final String username;
-  final int totalPoints;
-  final int roundsPlayed;
-  final int bestSingleRound;
-
-  LeaderboardEntry({
-    required this.username,
-    required this.totalPoints,
-    required this.roundsPlayed,
-    required this.bestSingleRound,
-  });
-
-  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
-    return LeaderboardEntry(
-      username: json['username'],
-      totalPoints: json['total_points'],
-      roundsPlayed: json['rounds_played'],
-      bestSingleRound: json['best_single_round'],
-    );
-  }
-}
-
-class UserStatistics {
-  final String username;
-  final int totalRounds;
-  final int totalPoints;
-  final int totalGelbfelder;
-  final int bestScoreInRound;
-
-  UserStatistics({
-    required this.username,
-    required this.totalRounds,
-    required this.totalPoints,
-    required this.totalGelbfelder,
-    required this.bestScoreInRound,
-  });
-
-  factory UserStatistics.fromJson(Map<String, dynamic> json) {
-    return UserStatistics(
-      username: json['username'],
-      totalRounds: json['total_rounds'],
-      totalPoints: json['total_points'],
-      totalGelbfelder: json['total_gelbfelder'],
-      bestScoreInRound: json['best_score_in_round'],
-    );
-  }
-}
-
-class RoundHistory {
-  final String roundName;
-  final int points;
-  final DateTime date;
-
-  RoundHistory({
-    required this.roundName,
-    required this.points,
-    required this.date,
-  });
-
-  factory RoundHistory.fromJson(Map<String, dynamic> json) {
-    return RoundHistory(
-      roundName: json['round_name'],
-      points: json['points'],
-      date: DateTime.parse(json['date']),
-    );
-  }
-}
 
 class AuthService {
   final String _baseUrl = 'http://awesom-o.org:8000';
@@ -123,19 +55,54 @@ class AuthService {
         'email': prefs.getString('email'),
         'birthday': prefs.getString('birthday'),
         'profile_image_data' : prefs.getString('profile_image_data'),
+        'profile_image_type' : prefs.getString('profile_image_type'), 
+        'password': prefs.getString('password'),
       }),
     );
     
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final token = data['access_token'];
+      final sixDigitCode = data['6-digit_code'];
       await prefs.setString('access_token', token);
+      await prefs.setString('sixDigitCode', sixDigitCode);
       return true;
     } else {
       return false;
     }
   }
+  
+Future<bool> verifyCode(String code) async {
+  final prefs = await SharedPreferences.getInstance();
+  final url = Uri.parse('$_baseUrl/verify-code');
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json', 'accept': 'application/json'},
+    body: jsonEncode({'email': prefs.getString("email"), 'code': code}),
+  );
 
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+Future<bool> sendVerificationCode() async {
+  final prefs = await SharedPreferences.getInstance();
+  final url = Uri.parse('http://awesom-o.org:8000/send-verification-code');
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json', 'accept': 'application/json'},
+    body: jsonEncode({'email': prefs.getString("email")}),
+  );
+
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    return false;
+  }
+}
   Future<bool> whoAmI() async {
     final url = Uri.parse('$_baseUrl/whoami');
 
@@ -297,161 +264,6 @@ Future<String> sendFriendRequest(String friendUsername) async {
     );
   }
 }
-
-Future<List<Map<String, dynamic>>> getFriendsList() async {
-  final url = Uri.parse('$_baseUrl/friends');
-
-  final response = await http.post(
-    url,
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'token': await getToken()}),
-  );
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    return List<Map<String, dynamic>>.from(data['friends']);
-  } else {
-    throw Exception('Failed to load friends: ${response.statusCode}');
-  }
-}
-
-Future<List<Map<String, dynamic>>> getOutgoingFriendRequests() async {
-  final url = Uri.parse('$_baseUrl/friend_requests/outgoing');
-  final token = await getToken();
-
-  final response = await http.post(
-    url,
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'token': token}),
-  );
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    final requests = data['outgoing_requests'];
-    return List<Map<String, dynamic>>.from(requests);
-  } else {
-    throw Exception(
-      'Failed to load outgoing friend requests: ${response.statusCode}\n${response.body}',
-    );
-  }
-}
-
-Future<List<Map<String, dynamic>>> getIncomingFriendRequests() async {
-  final url = Uri.parse('$_baseUrl/friend_requests/incoming');
-  final token = await getToken();
-
-  final response = await http.post(
-    url,
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'token': token}),
-  );
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    final requests = data['incoming_requests'];
-    return List<Map<String, dynamic>>.from(requests);
-  } else {
-    throw Exception(
-      'Failed to load incoming friend requests: ${response.statusCode}\n${response.body}',
-    );
-  }
-}
-
-Future<bool> acceptFriendRequest(int requestId) async {
-  final url = Uri.parse('$_baseUrl/accept_friend?request_id=$requestId');
-  final token = await getToken();
-
-  final response = await http.post(
-    url,
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'token': token}),
-  );
-
-  if (response.statusCode == 200) {
-    return true;
-  } else {
-    throw Exception(
-      'Failed to accept friend request: ${response.statusCode}\n${response.body}',
-    );
-  }
-}
-
-Future<bool> rejectFriendRequest(int requestId) async {
-  final url = Uri.parse('$_baseUrl/reject_friend?request_id=$requestId');
-  final token = await getToken();
-
-  final response = await http.post(
-    url,
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'token': token}),
-  );
-
-  if (response.statusCode == 200) {
-    return true;
-  } else {
-    throw Exception(
-      'Failed to reject friend request: ${response.statusCode}\n${response.body}',
-    );
-  }
-}
-
-Future<bool> cancelFriendRequest(int requestId) async {
-  final url = Uri.parse('$_baseUrl/cancel_friend_request?request_id=$requestId');
-  final token = await getToken();
-
-  final response = await http.post(
-    url,
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'token': token}),
-  );
-
-  if (response.statusCode == 200) {
-    return true;
-  } else {
-    throw Exception(
-      'Failed to cancel friend request: ${response.statusCode}\n${response.body}',
-    );
-  }
-}
-Future<bool> removeFriend(int friendUserId) async {
-  final url = Uri.parse('$_baseUrl/remove_friend/$friendUserId');
-  final token = await getToken();
-
-  final request = http.Request('DELETE', url)
-    ..headers.addAll({
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    })
-    ..body = jsonEncode({'token': token});
-
-  final response = await request.send();
-
-  if (response.statusCode == 200) {
-    return true;
-  } else {
-    final responseBody = await response.stream.bytesToString();
-    throw Exception('Failed to remove friend: ${response.statusCode}\n$responseBody');
-  }
-}
-
   Future<bool> refreshUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
@@ -675,64 +487,6 @@ Future<bool> isBetaTester() async {
       // Failure
       print('Failed to deactivate round: ${response.statusCode} - ${response.body}');
       return false;
-    }
-  }
-
-  Future<List<RoundHistory>> fetchUserHistoryRounds() async {
-    final url = Uri.parse('$_baseUrl/statistics/my_rounds');
-
-    final response = await http.post(
-      url,
-      headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'token': await getToken()}),
-    );
-
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      final rounds = decoded['rounds'] as List;
-      return rounds.map((e) => RoundHistory.fromJson(e)).toList();
-    } else {
-      throw Exception('Failed to load round statistics: ${response.body}');
-    }
-  }
-
-
-Future<UserStatistics?> fetchUserStatistics() async {
-  try {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/statistics/me'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'token': await getToken()}),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return UserStatistics.fromJson(data);
-    } else {
-      throw Exception('Failed to fetch statistics: ${response.body}');
-    }
-  } catch (e) {
-    print('Error fetching user statistics: $e');
-    return null;
-  }
-}
-  Future<List<LeaderboardEntry>> fetchLeaderboard() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/statistics/leaderboard'),
-      headers: {'accept': 'application/json'},
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final List<dynamic> leaderboardJson = data['leaderboard'];
-      return leaderboardJson
-          .map((entry) => LeaderboardEntry.fromJson(entry))
-          .toList();
-    } else {
-      throw Exception('Failed to load leaderboard');
     }
   }
 

@@ -18,10 +18,12 @@ class _RegisterPage3State extends State<RegisterPage3> {
   int currentStep = 1;
   File? _imageFile; // For mobile
   Uint8List? _webImage; // For web
+  String? _imageExtension;
   final TextEditingController _nameController = TextEditingController();
+
   bool get _isImagePicked => _imageFile != null || _webImage != null;
   bool get _isNameEntered => _nameController.text.trim().isNotEmpty;
-  bool get _canProceed => _isNameEntered && _isImagePicked;
+  bool get _canProceed => _isNameEntered; // Or: _isNameEntered && _isImagePicked;
 
   @override
   void dispose() {
@@ -34,16 +36,25 @@ class _RegisterPage3State extends State<RegisterPage3> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
+      String? extension;
       if (kIsWeb) {
+        // On web, file.path is often empty, so infer from mimeType or default to png
+        extension = pickedFile.mimeType?.split('/').last.toLowerCase() ?? 'png';
         final bytes = await pickedFile.readAsBytes();
         setState(() {
           _webImage = bytes;
           _imageFile = null;
+          _imageExtension = extension;
         });
       } else {
+        // On mobile, path should be available
+        extension = pickedFile.path.split('.').length > 1
+            ? pickedFile.path.split('.').last.toLowerCase()
+            : 'jpg'; // fallback
         setState(() {
           _imageFile = File(pickedFile.path);
           _webImage = null;
+          _imageExtension = extension;
         });
       }
     }
@@ -57,17 +68,20 @@ class _RegisterPage3State extends State<RegisterPage3> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('name', name);
 
+    // Save image data if picked
     if (_imageFile != null) {
-      // Read image bytes and store as base64 for mobile
       final bytes = await _imageFile!.readAsBytes();
+      final ext = _imageExtension ?? 'jpg';
       prefs.setString('profile_image_data', base64Encode(bytes));
+      prefs.setString('profile_image_type', ext);
     } else if (_webImage != null) {
+      final ext = _imageExtension ?? 'png';
       prefs.setString('profile_image_data', base64Encode(_webImage!));
+      prefs.setString('profile_image_type', ext);
     }
 
     Navigator.pushReplacementNamed(context, '/register4');
   }
-
 
   void prevStep() {
     if (currentStep > 0) setState(() => currentStep--);

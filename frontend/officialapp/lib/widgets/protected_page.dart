@@ -23,7 +23,7 @@ class ProtectedPage extends StatelessWidget {
         if (snapshot.data == false) {
           // Redirect to login if no token
           Future.microtask(() {
-            Navigator.pushReplacementNamed(context, '/register6');
+            Navigator.pushReplacementNamed(context, '/start-progress');
           });
           return const SizedBox();
         }

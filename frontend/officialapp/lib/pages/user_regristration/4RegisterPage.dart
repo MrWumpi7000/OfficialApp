@@ -3,7 +3,6 @@ import 'package:officialapp/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/ChainProgressBar.dart';
 import '../../widgets/DatePickerDropdown.dart';
-import '../../services/auth_service.dart';
 
 class RegisterPage4 extends StatefulWidget {
   @override
@@ -24,19 +23,17 @@ class _RegisterPage4State extends State<RegisterPage4> {
 
   Future<void> nextStep() async {
     if (_selectedDate != null && _isOldEnough) {
-
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('birthday', _selectedDate!.toIso8601String());
 
       if (currentStep < 4) setState(() => currentStep++);
-      
+
       success = await AuthService().register();
       if (success) {
         Navigator.pushReplacementNamed(context, '/register5');
       } else {
         Navigator.pushReplacementNamed(context, '/register1');
       }
-
     }
   }
 
@@ -47,7 +44,6 @@ class _RegisterPage4State extends State<RegisterPage4> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -89,24 +85,26 @@ class _RegisterPage4State extends State<RegisterPage4> {
                         ),
                       ),
                       const SizedBox(height: 30),
-Padding(
-  padding: const EdgeInsets.all(8.0),
-  child: Row(
-    crossAxisAlignment: CrossAxisAlignment.center, // <--- center vertically
-    children: [
-      Icon(Icons.info, color: Colors.red),
-      const SizedBox(width: 8),
-      Expanded(
-        child: Text(
-          "You must be at least 18 years old to register for this app. Please ensure that you are of legal age before proceeding.",
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-          textAlign: TextAlign.left,
-          softWrap: true,
-        ),
-      ),
-    ],
-  ),
-),
+                      // Only show the info text if user is NOT old enough
+                      if (_selectedDate == null || !_isOldEnough)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center, // <--- center vertically
+                            children: [
+                              Icon(Icons.info, color: Colors.red),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  "You must be at least 18 years old to register for this app. Please ensure that you are of legal age before proceeding.",
+                                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                                  textAlign: TextAlign.left,
+                                  softWrap: true,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),

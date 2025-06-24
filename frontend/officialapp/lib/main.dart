@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'pages/home_page.dart';
-import 'pages/friends_page.dart';
-import 'pages/statistics_page.dart';
 import 'pages/profile_page.dart';
-import 'pages/create_lobby_page.dart';
 import 'pages/user_regristration/login_page.dart';
 import 'widgets/protected_page.dart';
 import 'services/handle_reload.dart';
@@ -54,19 +51,8 @@ class MyApp extends StatelessWidget {
       // Routes without animation:
       case '/':
         return _noAnimationRoute(ProtectedPage(child: HomePage()), settings);
-      case '/friends':
-        return _noAnimationRoute(ProtectedPage(child: FriendsPage()), settings);
-      case '/statistics':
-        return _noAnimationRoute(ProtectedPage(child: StatisticsPage()), settings);
       case '/profile':
         return _noAnimationRoute(ProtectedPage(child: ProfilePage()), settings);
-
-      // Routes with default animation:
-    case '/create_lobby':
-      return MaterialPageRoute(
-        builder: (_) => ProtectedPage(child: CreateLobbyPage()),
-        settings: settings,
-      );
 
       case '/login':
         return MaterialPageRoute(

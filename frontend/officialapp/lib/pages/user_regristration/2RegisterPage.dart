@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/ChainProgressBar.dart';
+import '../../services/auth_service.dart';
 
 class RegisterPage2 extends StatefulWidget {
   @override
@@ -10,16 +11,30 @@ class RegisterPage2 extends StatefulWidget {
 class _RegisterPage2State extends State<RegisterPage2> {
   int currentStep = 0;
   String code = "";
-  
-  void ValidateCode(code) {
-    print(code);
-    //implement your code validation logic here
+  String? errorMessage; // To show error message
+
+  Future<void> ValidateCode(code) async {
+    await AuthService().verifyCode(code).then((isValid) {
+      if (isValid) {
+        setState(() {
+          errorMessage = null; // Clear error message if successful
+        });
+        Navigator.pushReplacementNamed(context, '/register3');
+      } else {
+        setState(() {
+          errorMessage = "Invalid verification code. Please try again.";
+        });
+      }
+    }).catchError((error) {
+      setState(() {
+        errorMessage = "Error validating code: $error";
+      });
+    });
   }
 
   void nextStep() {
     if (currentStep < 4) setState(() => currentStep++);
     ValidateCode(code);
-    Navigator.pushReplacementNamed(context, '/register3');
   }
 
   void prevStep() {
@@ -28,9 +43,13 @@ class _RegisterPage2State extends State<RegisterPage2> {
   }
 
   void onCodeChanged(String value) {
-    setState(() => code = value);
-    print("Code changed: $code");
-    // TODO: Implement your code validation logic here
+    setState(() {
+      code = value;
+      errorMessage = null; 
+    });
+    if (value.length == 6) {
+      ValidateCode(value);
+    }
   }
 
   @override
@@ -76,6 +95,18 @@ class _RegisterPage2State extends State<RegisterPage2> {
                 onChanged: onCodeChanged,
               ),
             ),
+            // Show error message if code is wrong
+            if (errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: Text(
+                  errorMessage!,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
             const Spacer(),
             // Only ONE row of navigation buttons at the bottom
             Padding(
