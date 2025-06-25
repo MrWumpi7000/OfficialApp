@@ -60,7 +60,7 @@ class _StartprogressPage extends State<StartprogressPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: () {Navigator.pushNamed(context, "/login");},
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 side: const BorderSide(color: Color(0xFF6246EA), width: 2),

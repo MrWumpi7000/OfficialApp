@@ -44,6 +44,8 @@ class AuthService {
   Future<bool> register() async {
     final url = Uri.parse('$_baseUrl/register');
     final prefs = await SharedPreferences.getInstance();
+    print("profile_image_data: ${prefs.getString('profile_image_data')}");
+    print("profile_image_extension: ${prefs.getString('profile_image_type')}");
     final response = await http.post(
       url,
       headers: {
@@ -54,23 +56,26 @@ class AuthService {
         'username': prefs.getString('name'),
         'email': prefs.getString('email'),
         'birthday': prefs.getString('birthday'),
-        'profile_image_data' : prefs.getString('profile_image_data'),
-        'profile_image_type' : prefs.getString('profile_image_type'), 
+        'profile_image_data': prefs.getString('profile_image_data'),
+        'profile_image_extension': prefs.getString('profile_image_type'), // <-- use correct key for backend!
         'password': prefs.getString('password'),
       }),
     );
-    
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final token = data['access_token'];
       final sixDigitCode = data['6-digit_code'];
       await prefs.setString('access_token', token);
-      await prefs.setString('sixDigitCode', sixDigitCode);
+      await prefs.setString('sixDigitCode', sixDigitCode ?? '');
       return true;
     } else {
+      // You may want to log or show the error
+      print('Register failed: ${response.statusCode} ${response.body}');
       return false;
     }
   }
+
   
 Future<bool> verifyCode(String code) async {
   final prefs = await SharedPreferences.getInstance();
@@ -131,82 +136,27 @@ Future<bool> sendVerificationCode() async {
     return false;
   }
 }
-
   Future<ImageProvider> getProfilePictureBytes() async {
-  final prefs = await SharedPreferences.getInstance();
-  final url = Uri.parse('$_baseUrl/profile_picture');
-
-  final cachedImageBase64 = prefs.getString('image');
-  if (cachedImageBase64 != null) {
-    final bytes = base64Decode(cachedImageBase64);
-    return MemoryImage(bytes);
-  }
-
-  final response = await http.post(
-    url,
-    headers: {'Content-Type': 'application/json'},
-    body: '{"token": "${await getToken()}"}',
-  );
-
-  if (response.statusCode == 200) {
-    final bytes = response.bodyBytes;
-    final encoded = base64Encode(bytes);
-    await prefs.setString('image', encoded); // store as string
-    return MemoryImage(bytes);
-  } else {
-    throw Exception('Failed to load profile picture');
-  }
-}
-
-  Future<void> uploadProfilePictureMobile(io.File imageFile) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('image');
-    final url = Uri.parse('$_baseUrl/upload_profile_picture');
     final token = await getToken();
     if (token == null) throw Exception('Token is null');
 
-    final request = http.MultipartRequest('POST', url)
-      ..fields['token'] = token
-      ..files.add(await http.MultipartFile.fromPath(
-        'file',
-        imageFile.path,
-        contentType: MediaType('image', 'png'),
-      ));
+    // Try cache first
+    final cached = prefs.getString('image');
+    if (cached != null) {
+      final bytes = base64Decode(cached);
+      return MemoryImage(bytes);
+    }
 
-    final response = await request.send();
+    // Download from backend
+    final url = Uri.parse('$_baseUrl/profile_picture?token=$token');
+    final response = await http.get(url);
     if (response.statusCode == 200) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('image'); 
-      await getProfilePictureBytes();
-    }
-    if (response.statusCode != 200) {
-      throw Exception('Failed to upload profile picture');
-    }
-  }
-
-  // Web version
-  Future<void> uploadProfilePictureWeb(Uint8List bytes, String filename) async {
-    final url = Uri.parse('$_baseUrl/upload_profile_picture');
-    final token = await getToken();
-    if (token == null) throw Exception('Token is null');
-
-    final request = http.MultipartRequest('POST', url)
-      ..fields['token'] = token
-      ..files.add(http.MultipartFile.fromBytes(
-        'file',
-        bytes,
-        filename: filename,
-        contentType: MediaType('image', 'png'),
-      ));
-
-    final response = await request.send();
-    if (response.statusCode == 200) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('image'); 
-      await getProfilePictureBytes();
-    }
-    if (response.statusCode != 200) {
-      throw Exception('Failed to upload profile picture');
+      final bytes = response.bodyBytes;
+      await prefs.setString('image', base64Encode(bytes));
+      return MemoryImage(bytes);
+    } else {
+      throw Exception('Failed to load profile picture');
     }
   }
 

@@ -20,23 +20,34 @@ class _RegisterPage1State extends State<RegisterPage1> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // New: field-specific errors
+  // Field-specific errors
+  String? emailError;
   String? passwordError;
   String? confirmPasswordError;
 
   bool get _isValidEmail {
     final email = _emailController.text.trim();
-    // Basic email validation
     return RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$").hasMatch(email);
   }
 
   bool get _isValidPassword {
-    // You can improve this with your own password rules
     return _passwordController.text.trim().length >= 6;
   }
 
   bool get _passwordsMatch {
     return _passwordController.text == _confirmPasswordController.text;
+  }
+
+  void _validateEmailField() {
+    setState(() {
+      emailError = null;
+      final emailText = _emailController.text.trim();
+      if (emailText.isEmpty) {
+        emailError = "Email cannot be empty.";
+      } else if (!_isValidEmail) {
+        emailError = "Please enter a valid email address.";
+      }
+    });
   }
 
   void _validatePasswordFields() {
@@ -63,27 +74,14 @@ class _RegisterPage1State extends State<RegisterPage1> {
 
     // Clear previous errors
     errorMessage = null;
+    emailError = null;
     passwordError = null;
     confirmPasswordError = null;
 
-    if (!_isValidEmail) {
-      setState(() {
-        errorMessage = "Please enter a valid email address.";
-      });
-      return;
-    }
-    if (!_isValidPassword) {
-      setState(() {
-        passwordError = "Password must be at least 6 characters.";
-        errorMessage = null;
-      });
-      return;
-    }
-    if (!_passwordsMatch) {
-      setState(() {
-        confirmPasswordError = "Passwords do not match.";
-        errorMessage = null;
-      });
+    _validateEmailField();
+    _validatePasswordFields();
+
+    if (emailError != null || passwordError != null || confirmPasswordError != null) {
       return;
     }
 
@@ -150,18 +148,26 @@ class _RegisterPage1State extends State<RegisterPage1> {
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               onChanged: (_) {
+                _validateEmailField();
                 setState(() {
                   errorMessage = null; // clear error on input change
                 });
               },
-              decoration: const InputDecoration(
+              onEditingComplete: _validateEmailField,
+              decoration: InputDecoration(
                 hintText: "Email address*",
-                border: OutlineInputBorder(
+                errorText: emailError,
+                border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(30)),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Color.fromARGB(255, 243, 243, 243),
+                fillColor: const Color.fromARGB(255, 243, 243, 243),
                 filled: true,
+                suffixIcon: (_emailController.text.isNotEmpty && emailError == null)
+                    ? Icon(Icons.check_circle, color: Colors.green)
+                    : (_emailController.text.isNotEmpty && emailError != null)
+                        ? Icon(Icons.error, color: Colors.red)
+                        : null,
               ),
             ),
           ),
@@ -172,7 +178,7 @@ class _RegisterPage1State extends State<RegisterPage1> {
           Padding(
             padding: const EdgeInsets.only(left: 15, right: 15),
             child: const Text(
-              "What's your Password?",
+              "Enter a Password!",
               style: TextStyle(fontSize: 28.5, fontWeight: FontWeight.bold),
             ),
           ),
@@ -184,7 +190,9 @@ class _RegisterPage1State extends State<RegisterPage1> {
               obscureText: _obscurePassword,
               onChanged: (_) {
                 _validatePasswordFields();
-                errorMessage = null; // clear error on input change
+                setState(() {
+                  errorMessage = null; // clear error on input change
+                });
               },
               decoration: InputDecoration(
                 hintText: "Password*",
@@ -219,7 +227,9 @@ class _RegisterPage1State extends State<RegisterPage1> {
               obscureText: _obscureConfirmPassword,
               onChanged: (_) {
                 _validatePasswordFields();
-                errorMessage = null; // clear error on input change
+                setState(() {
+                  errorMessage = null; // clear error on input change
+                });
               },
               decoration: InputDecoration(
                 hintText: "Confirm Password*",

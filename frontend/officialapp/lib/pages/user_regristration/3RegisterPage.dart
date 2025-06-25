@@ -16,14 +16,20 @@ class RegisterPage3 extends StatefulWidget {
 
 class _RegisterPage3State extends State<RegisterPage3> {
   int currentStep = 1;
-  File? _imageFile; // For mobile
-  Uint8List? _webImage; // For web
-  String? _imageExtension;
+  Uint8List? _imageBytes;
+  String? _imageExtension; // e.g. 'jpg', 'png'
   final TextEditingController _nameController = TextEditingController();
 
-  bool get _isImagePicked => _imageFile != null || _webImage != null;
+  bool get _isImagePicked => _imageBytes != null;
   bool get _isNameEntered => _nameController.text.trim().isNotEmpty;
   bool get _canProceed => _isNameEntered; // Or: _isNameEntered && _isImagePicked;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCachedImage();
+    _loadCachedName();
+  }
 
   @override
   void dispose() {
@@ -31,32 +37,54 @@ class _RegisterPage3State extends State<RegisterPage3> {
     super.dispose();
   }
 
+  Future<void> _loadCachedImage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? base64Data = prefs.getString('profile_image_data');
+    String? ext = prefs.getString('profile_image_type');
+    if (base64Data != null && ext != null) {
+      setState(() {
+        _imageBytes = base64Decode(base64Data);
+        _imageExtension = ext;
+      });
+    }
+  }
+
+  Future<void> _loadCachedName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? name = prefs.getString('name');
+    if (name != null) {
+      _nameController.text = name;
+      setState(() {});
+    }
+  }
+
+  Future<void> _saveProfileImage(Uint8List bytes, String extension) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_image_data', base64Encode(bytes));
+    await prefs.setString('profile_image_type', extension);
+    setState(() {
+      _imageBytes = bytes;
+      _imageExtension = extension;
+    });
+  }
+
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      String? extension;
+      String extension;
+      Uint8List bytes;
       if (kIsWeb) {
-        // On web, file.path is often empty, so infer from mimeType or default to png
         extension = pickedFile.mimeType?.split('/').last.toLowerCase() ?? 'png';
-        final bytes = await pickedFile.readAsBytes();
-        setState(() {
-          _webImage = bytes;
-          _imageFile = null;
-          _imageExtension = extension;
-        });
+        bytes = await pickedFile.readAsBytes();
       } else {
-        // On mobile, path should be available
         extension = pickedFile.path.split('.').length > 1
             ? pickedFile.path.split('.').last.toLowerCase()
-            : 'jpg'; // fallback
-        setState(() {
-          _imageFile = File(pickedFile.path);
-          _webImage = null;
-          _imageExtension = extension;
-        });
+            : 'jpg';
+        bytes = await pickedFile.readAsBytes();
       }
+      await _saveProfileImage(bytes, extension);
     }
   }
 
@@ -67,18 +95,7 @@ class _RegisterPage3State extends State<RegisterPage3> {
     String name = _nameController.text.trim();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('name', name);
-
-    // Save image data if picked
-    if (_imageFile != null) {
-      final bytes = await _imageFile!.readAsBytes();
-      final ext = _imageExtension ?? 'jpg';
-      prefs.setString('profile_image_data', base64Encode(bytes));
-      prefs.setString('profile_image_type', ext);
-    } else if (_webImage != null) {
-      final ext = _imageExtension ?? 'png';
-      prefs.setString('profile_image_data', base64Encode(_webImage!));
-      prefs.setString('profile_image_type', ext);
-    }
+    // Image is already cached via _saveProfileImage on pick
 
     Navigator.pushReplacementNamed(context, '/register4');
   }
@@ -155,25 +172,20 @@ class _RegisterPage3State extends State<RegisterPage3> {
                       const SizedBox(height: 15),
                       GestureDetector(
                         onTap: _pickImage,
-                        child: _webImage != null
+                        child: _imageBytes != null
                             ? CircleAvatar(
                                 radius: 48,
-                                backgroundImage: MemoryImage(_webImage!),
+                                backgroundImage: MemoryImage(_imageBytes!),
                               )
-                            : _imageFile != null
-                                ? CircleAvatar(
-                                    radius: 48,
-                                    backgroundImage: FileImage(_imageFile!),
-                                  )
-                                : CircleAvatar(
-                                    radius: 48,
-                                    backgroundColor: Colors.white,
-                                    child: SvgPicture.asset(
-                                      'assets/simple_camera_add.svg',
-                                      width: 95,
-                                      height: 95,
-                                    ),
-                                  ),
+                            : CircleAvatar(
+                                radius: 48,
+                                backgroundColor: Colors.white,
+                                child: SvgPicture.asset(
+                                  'assets/simple_camera_add.svg',
+                                  width: 95,
+                                  height: 95,
+                                ),
+                              ),
                       ),
                       const SizedBox(height: 30),
                     ],
