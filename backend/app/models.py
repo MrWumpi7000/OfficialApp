@@ -11,7 +11,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     birthday = Column(DateTime, nullable=True)
     profile_image_data = Column(String, nullable=True)
-    progile_image_extension = Column(String, nullable=True)
+    profile_image_extension = Column(String, nullable=True)
     six_digit_code = Column(String(6), nullable=True)
     password = Column(String, nullable=False)
     
