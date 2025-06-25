@@ -1,3 +1,17 @@
 # Ignore the email utils Python file
 email_utils.py
 backend/app/emailutils.py
+backend/officialapp.db
+
+*.db
+# Ignore the database file
+*.sqlite3
+# Ignore the SQLite database file
+*.sqlite
+# Ignore the Python cache files
+__pycache__/
+*.pyc
+*.pyo
+# Ignore the virtual environment directory
+venv/
+# Ignore the .env file
