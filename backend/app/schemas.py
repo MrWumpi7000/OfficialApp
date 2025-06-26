@@ -13,7 +13,7 @@ class TokenRequest(BaseModel):
     token: str
 
 class LoginRequest(BaseModel):
-    username_or_email: str
+    email: str
     password: str
     
 class EmailRequest(BaseModel):
@@ -22,3 +22,8 @@ class EmailRequest(BaseModel):
 class VerificationRequest(BaseModel):
     email: str
     code: str
+
+class ChangePasswordRequest(BaseModel):
+    email: str
+    code: str
+    new_password: str

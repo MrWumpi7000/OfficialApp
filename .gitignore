@@ -2,7 +2,7 @@
 email_utils.py
 backend/app/emailutils.py
 backend/app/officialapp.db
-
+backend/uploads/
 *.db
 # Ignore the database file
 *.sqlite3
