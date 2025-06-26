@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/auth_service.dart'; // Adjust the path based on your structure
 
 class StartprogressPage extends StatefulWidget {
   @override

@@ -1,13 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import 'package:officialapp/pages/user_regristration/6RegisterPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io' as io;
 import 'package:flutter/material.dart';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart'; // for kIsWeb
-import 'package:http_parser/http_parser.dart';
 import 'package:version/version.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -15,8 +10,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 class AuthService {
   final String _baseUrl = 'http://awesom-o.org:8000';
 
-  Future<bool> login(String username, String password) async {
+  Future<bool> login() async {
     final url = Uri.parse('$_baseUrl/login');
+    final prefs = await SharedPreferences.getInstance();
 
     final response = await http.post(
       url,
@@ -25,16 +21,18 @@ class AuthService {
         'Accept': 'application/json',
       },
       body: jsonEncode({
-        'username_or_email': username,
-        'password': password,
+        'email': prefs.getString('email'),
+        'password': prefs.getString('password'),
       }),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final token = data['access_token'];
+      final sixDigitCode = data['6-digit_code'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', token);
+      await prefs.setString('sixDigitCode', sixDigitCode ?? '');
       return true;
     } else {
       return false;
@@ -44,8 +42,6 @@ class AuthService {
   Future<bool> register() async {
     final url = Uri.parse('$_baseUrl/register');
     final prefs = await SharedPreferences.getInstance();
-    print("profile_image_data: ${prefs.getString('profile_image_data')}");
-    print("profile_image_extension: ${prefs.getString('profile_image_type')}");
     final response = await http.post(
       url,
       headers: {
@@ -71,13 +67,12 @@ class AuthService {
       return true;
     } else {
       // You may want to log or show the error
-      print('Register failed: ${response.statusCode} ${response.body}');
+      debugPrint('Register failed: ${response.statusCode} ${response.body}');
       return false;
     }
   }
 
-  
-Future<bool> verifyCode(String code) async {
+  Future<bool> verifyCode(String code) async {
   final prefs = await SharedPreferences.getInstance();
   final url = Uri.parse('$_baseUrl/verify-code');
   final response = await http.post(
@@ -93,7 +88,7 @@ Future<bool> verifyCode(String code) async {
   }
 }
 
-Future<bool> sendVerificationCode() async {
+  Future<bool> sendVerificationCode() async {
   final prefs = await SharedPreferences.getInstance();
   final url = Uri.parse('http://awesom-o.org:8000/send-verification-code');
   final response = await http.post(
@@ -108,6 +103,48 @@ Future<bool> sendVerificationCode() async {
     return false;
   }
 }
+Future<bool> sendResetCode(String email) async {
+    final url = Uri.parse('$_baseUrl/reset-password');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json', 'accept': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+    if (response.statusCode == 200) {
+      // Optionally check for success message
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> verifyResetCode(String email, String code) async {
+    final url = Uri.parse('$_baseUrl/password-reset/verify');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json', 'accept': 'application/json'},
+      body: jsonEncode({'email': email, 'code': code}),
+    );
+    if (response.statusCode == 200) {
+      // Optionally check for success message
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> resetPassword(String email, String code, String newPassword) async {
+    final url = Uri.parse('$_baseUrl/password-reset/change');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json', 'accept': 'application/json'},
+      body: jsonEncode({'email': email, 'code': code, 'new_password': newPassword}),
+    );
+    if (response.statusCode == 200) {
+      // Password reset successful
+      return true;
+    }
+    // Optionally, you can parse the error message from the response if needed
+    return false;
+  }
   Future<bool> whoAmI() async {
     final url = Uri.parse('$_baseUrl/whoami');
 

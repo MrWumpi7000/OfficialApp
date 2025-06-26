@@ -15,7 +15,7 @@ import 'pages/user_regristration/3RegisterPage.dart';
 import 'pages/user_regristration/4RegisterPage.dart';
 import 'pages/user_regristration/5RegisterPage.dart';
 import 'pages/user_regristration/6RegisterPage.dart';
-
+import 'pages/user_regristration/ResetPasswordPage.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -100,7 +100,10 @@ class MyApp extends StatelessWidget {
       case "/start-register":
       return MaterialPageRoute(builder: (_) => StartRegisterPage0(),
       settings: settings,);
-
+      
+      case "/reset-password":
+      return MaterialPageRoute(builder: (_) => ResetPasswordPage(),
+      settings: settings,);
       default:
         if (settings.name != null && settings.name!.startsWith('/play/')) {
           final uri = Uri.parse(settings.name!);
