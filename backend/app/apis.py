@@ -6,12 +6,13 @@ from app.models import User, VerificationCode  # Import your models
 from app.utils import generate_numeric_code  # Import the utility function for generating numeric codes
 from app.utils import hash_password, verify_password, whoami, create_access_token
 from app.database import get_db
-from app.schemas import RegisterRequest, TokenRequest, LoginRequest, EmailRequest, VerificationRequest
+from app.schemas import RegisterRequest, TokenRequest, LoginRequest, EmailRequest, VerificationRequest, TokenRequest
 from app.emailutils import send_verification_mail  # Assuming you have an email utility module
 from uuid import uuid4
 import datetime
 import os
 import shutil
+import base64
 import random
 import string
 from datetime import datetime
@@ -30,17 +31,15 @@ def generate_code(db, length=6):
 
 @router.post("/register")
 def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.username == request.username).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already taken")
-    
+    # Check if email is already registered
     existing_email = db.query(User).filter(User.email == request.email).first()
     if existing_email:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # Generate unique 6-digit code
     code = generate_code(db)
 
-    # Fix: parse birthday string to date or datetime
+    # Parse birthday
     try:
         birthday = datetime.strptime(request.birthday, "%Y-%m-%dT%H:%M:%S.%f").date()
     except ValueError:
@@ -56,9 +55,8 @@ def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
         username=request.username,
         email=request.email, 
         birthday=birthday,
-        # We'll set these after saving the file:
         profile_image_data=None,
-        progile_image_extension=profile_image_extension,
+        profile_image_extension=profile_image_extension,
         six_digit_code=code,
         password=hashed_password,
     )
@@ -70,10 +68,11 @@ def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
     if request.profile_image_data and profile_image_extension:
         try:
             image_data = base64.b64decode(request.profile_image_data)
-        except Exception:
+        except Exception as e:
+            db.rollback()  # Rollback the transaction if image decoding fails
+            print(f"Base64 decode error: {e}")
             raise HTTPException(status_code=400, detail="Invalid base64 image data")
 
-        # Ensure uploads directory exists
         upload_dir = "uploads"
         os.makedirs(upload_dir, exist_ok=True)
         filename = f"user_{db_user.id}.{profile_image_extension}"
@@ -81,13 +80,16 @@ def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
         with open(file_path, "wb") as f:
             f.write(image_data)
 
-        # Save only the filename in the db (or the relative path if you prefer)
         db_user.profile_image_data = filename
         db.commit()
 
     access_token = create_access_token(data={"email": request.email})
 
-    return {"access_token": access_token, "token_type": "bearer", '6-digit_code': code}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "6-digit_code": code
+    }
 
 @router.post("/send-verification-code")
 def send_verification_code(request: EmailRequest, db: Session = Depends(get_db)):
@@ -138,3 +140,4 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"email": user.email})
 
     return {"access_token": access_token, "token_type": "bearer"}
+

@@ -1,7 +1,7 @@
 # Ignore the email utils Python file
 email_utils.py
 backend/app/emailutils.py
-backend/officialapp.db
+backend/app/officialapp.db
 
 *.db
 # Ignore the database file
