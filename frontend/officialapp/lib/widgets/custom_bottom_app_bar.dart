@@ -6,7 +6,7 @@ class CustomBottomAppBar extends StatefulWidget {
 
   const CustomBottomAppBar({
     required this.currentIndex,
-    Key? key, // Accepts the global key
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -21,30 +21,27 @@ class CustomBottomAppBarState extends State<CustomBottomAppBar> {
     super.initState();
     _userImageFuture = AuthService().getProfilePictureBytes();
   }
+
   void refreshProfileImage() {
-  setState(() {
-    _userImageFuture = AuthService().getProfilePictureBytes();
-  });
-}
-  final GlobalKey<CustomBottomAppBarState> bottomBarKey = GlobalKey();
-
- void _onTap(BuildContext context, int index) {
-  final routes = ['/', '/friends', '/statistics', '/profile'];
-
-  if (index < routes.length && ModalRoute.of(context)?.settings.name != routes[index]) {
-    Navigator.pushNamed(context, routes[index]);
+    setState(() {
+      _userImageFuture = AuthService().getProfilePictureBytes();
+    });
   }
-}
+
+  void _onTap(BuildContext context, int index) {
+    final routes = ['/', '/friends', '/add', '/statistics', '/profile'];
+    if (index < routes.length && ModalRoute.of(context)?.settings.name != routes[index]) {
+      Navigator.pushReplacementNamed(context, routes[index]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      key: bottomBarKey,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
       child: BottomAppBar(
         color: Colors.black87,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
+        // Remove notch shape since no longer using FAB
         child: SizedBox(
           height: 70,
           child: Row(
@@ -52,9 +49,9 @@ class CustomBottomAppBarState extends State<CustomBottomAppBar> {
             children: [
               _buildNavItem(context, Icons.home, "Home", 0),
               _buildNavItem(context, Icons.group, "Friends", 1),
-              const SizedBox(width: 40),
-              _buildNavItem(context, Icons.send, "Stats", 2),
-              _buildProfileItem(context, 3),
+              _buildAddButton(context, 2),
+              _buildNavItem(context, Icons.send, "Stats", 3),
+              _buildProfileItem(context, 4),
             ],
           ),
         ),
@@ -84,6 +81,15 @@ class CustomBottomAppBarState extends State<CustomBottomAppBar> {
     );
   }
 
+  Widget _buildAddButton(BuildContext context, int index) {
+    final isSelected = widget.currentIndex == index;
+    return IconButton(
+      onPressed: () => _onTap(context, index),
+      icon: Icon(Icons.add_circle, size: 32, color: isSelected ? Colors.white : Colors.grey),
+      tooltip: "Add",
+    );
+  }
+
   Widget _buildProfileItem(BuildContext context, int index) {
     final isSelected = widget.currentIndex == index;
     return GestureDetector(
@@ -101,7 +107,7 @@ class CustomBottomAppBarState extends State<CustomBottomAppBar> {
                   backgroundColor: Colors.grey,
                   child: SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
                 );
-              } else if (snapshot.hasError) {
+              } else if (snapshot.hasError || !snapshot.hasData) {
                 return const CircleAvatar(
                   radius: 12,
                   backgroundColor: Colors.red,
