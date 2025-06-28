@@ -269,7 +269,7 @@ class _RegisterPage1State extends State<RegisterPage1> {
 
           Spacer(),
           Padding(
-            padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
+            padding: const EdgeInsets.only(bottom: 10.0, left: 16, right: 16),
             child: SizedBox(
               width: 360,
               child: ElevatedButton(
@@ -291,6 +291,20 @@ class _RegisterPage1State extends State<RegisterPage1> {
               ),
             ),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text(
+              "Already have an account? Login",
+              style: TextStyle(
+                color: Color(0xFF6246EA),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
         ],
       ),
     );

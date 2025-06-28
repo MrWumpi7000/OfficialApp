@@ -69,6 +69,7 @@ flutter:
     - assets/paperplane-color_Version2.svg
     - assets/simple_camera_add.svg
     - assets/resetpassword.jpg
+    - assets/checkin_logo.png
 
 flutter_icons:
   android: true

@@ -33,6 +33,9 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', token);
       await prefs.setString('sixDigitCode', sixDigitCode ?? '');
+      await prefs.setString('name', data['name'] ?? '');
+      await prefs.setString('profile_image_data', data['profile_image_data'] ?? '');
+      await prefs.setString('profile_image_type', data['profile_image_extension'] ?? '');
       return true;
     } else {
       return false;

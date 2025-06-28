@@ -13,7 +13,7 @@ class BaseScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       
-      backgroundColor: const Color(0xFFFEDD37),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255), // Set the background color of the Scaffold
       body: child,
       bottomNavigationBar: CustomBottomAppBar(
       key: bottomBarKey, // <-- This connects the key!

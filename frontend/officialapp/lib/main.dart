@@ -7,7 +7,7 @@ import 'services/handle_reload.dart';
 import 'pages/play_page.dart';
 import 'services/version_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'pages/user_regristration/startProgress_page.dart';
+import 'pages/user_regristration/startprogress_page.dart';
 import 'pages/user_regristration/StartRegisterPage0.dart';
 import 'pages/user_regristration/1RegisterPage.dart';
 import 'pages/user_regristration/2RegisterPage.dart';
