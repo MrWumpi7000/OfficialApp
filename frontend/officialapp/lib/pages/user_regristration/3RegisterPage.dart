@@ -109,137 +109,140 @@ class _RegisterPage3State extends State<RegisterPage3> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Column(
-          children: [
-            ClipPath(
-              clipper: TopCurveClipper(),
-              child: Container(
-                height: 255,
-                color: Color(0xFF6246EA),
-                child: Center(
-                  child: ParadeProgressBar(
-                    currentStep: currentStep,
-                  ),
-                ),
-              ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 24),
-                      const Text(
-                        "What's your name?",
-                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      const SizedBox(
-                        width: 300,
-                        child: Text(
-                          "Please enter your name",
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                          textAlign: TextAlign.start,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 330,
-                        child: TextField(
-                          controller: _nameController,
-                          onChanged: (_) => setState(() {}),
-                          decoration: const InputDecoration(
-                            hintText: "Name*",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(15)),
-                              borderSide: BorderSide.none,
-                            ),
-                            fillColor: Color.fromARGB(255, 243, 243, 243),
-                            filled: true,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 50),
-                      const SizedBox(
-                        width: 300,
-                        child: Text(
-                          "Let's choose a Profile Picture",
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: _imageBytes != null
-                            ? CircleAvatar(
-                                radius: 48,
-                                backgroundImage: MemoryImage(_imageBytes!),
-                              )
-                            : CircleAvatar(
-                                radius: 48,
-                                backgroundColor: Colors.white,
-                                child: SvgPicture.asset(
-                                  'assets/simple_camera_add.svg',
-                                  width: 95,
-                                  height: 95,
-                                ),
-                              ),
-                      ),
-                      const SizedBox(height: 30),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
-              child: Row(
+            child: IntrinsicHeight(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: prevStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6246EA),
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  ClipPath(
+                    clipper: TopCurveClipper(),
+                    child: Container(
+                      height: 255,
+                      color: Color(0xFF6246EA),
+                      child: Center(
+                        child: ParadeProgressBar(
+                          currentStep: currentStep,
                         ),
-                      ),
-                      child: const Text(
-                        "Back",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _canProceed ? nextStep : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6246EA),
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "What's your name?",
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  const SizedBox(
+                    width: 300,
+                    child: Text(
+                      "Please enter your name",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 330,
+                    child: TextField(
+                      controller: _nameController,
+                      onChanged: (_) => setState(() {}),
+                      decoration: const InputDecoration(
+                        hintText: "Name*",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          borderSide: BorderSide.none,
                         ),
+                        fillColor: Color.fromARGB(255, 243, 243, 243),
+                        filled: true,
                       ),
-                      child: const Text(
-                        "Next",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
-                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  const SizedBox(
+                    width: 300,
+                    child: Text(
+                      "Let's choose a Profile Picture",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: _imageBytes != null
+                        ? CircleAvatar(
+                            radius: 48,
+                            backgroundImage: MemoryImage(_imageBytes!),
+                          )
+                        : CircleAvatar(
+                            radius: 48,
+                            backgroundColor: Colors.white,
+                            child: SvgPicture.asset(
+                              'assets/simple_camera_add.svg',
+                              width: 95,
+                              height: 95,
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 30),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: prevStep,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6246EA),
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              "Back",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _canProceed ? nextStep : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6246EA),
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              "Next",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

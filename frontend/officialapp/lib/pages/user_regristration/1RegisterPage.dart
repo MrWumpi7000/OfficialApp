@@ -114,198 +114,207 @@ class _RegisterPage1State extends State<RegisterPage1> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          ClipPath(
-            clipper: TopCurveClipper(),
-            child: Container(
-              height: 255,
-              color: Color(0xFF6246EA),
-              child: Center(
-                child: ParadeProgressBar(
-                  currentStep: currentStep,
-                ),
-              ),
-            ),
+      // This ensures the body moves up when the keyboard appears
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-
-          const SizedBox(height: 40),
-
-          // Consistent heading for email
-          Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15),
-            child: const Text(
-              "What's your email?",
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          SizedBox(
-            width: 360,
-            child: TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              onChanged: (_) {
-                _validateEmailField();
-                setState(() {
-                  errorMessage = null; // clear error on input change
-                });
-              },
-              onEditingComplete: _validateEmailField,
-              decoration: InputDecoration(
-                hintText: "Email address*",
-                errorText: emailError,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  borderSide: BorderSide.none,
-                ),
-                fillColor: const Color.fromARGB(255, 243, 243, 243),
-                filled: true,
-                suffixIcon: (_emailController.text.isNotEmpty && emailError == null)
-                    ? Icon(Icons.check_circle, color: Colors.green)
-                    : (_emailController.text.isNotEmpty && emailError != null)
-                        ? Icon(Icons.error, color: Colors.red)
-                        : null,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 30),
-
-          // Consistent heading for password
-          Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15),
-            child: const Text(
-              "Enter a Password!",
-              style: TextStyle(fontSize: 28.5, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: 360,
-            child: TextField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              onChanged: (_) {
-                _validatePasswordFields();
-                setState(() {
-                  errorMessage = null; // clear error on input change
-                });
-              },
-              decoration: InputDecoration(
-                hintText: "Password*",
-                errorText: passwordError,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  borderSide: BorderSide.none,
-                ),
-                fillColor: const Color.fromARGB(255, 243, 243, 243),
-                filled: true,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          SizedBox(
-            width: 360,
-            child: TextField(
-              controller: _confirmPasswordController,
-              obscureText: _obscureConfirmPassword,
-              onChanged: (_) {
-                _validatePasswordFields();
-                setState(() {
-                  errorMessage = null; // clear error on input change
-                });
-              },
-              decoration: InputDecoration(
-                hintText: "Confirm Password*",
-                errorText: confirmPasswordError,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  borderSide: BorderSide.none,
-                ),
-                fillColor: const Color.fromARGB(255, 243, 243, 243),
-                filled: true,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureConfirmPassword = !_obscureConfirmPassword;
-                    });
-                  },
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Show error message if present
-          if (errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-              child: Text(
-                errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-              ),
-            ),
-
-          Spacer(),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10.0, left: 16, right: 16),
-            child: SizedBox(
-              width: 360,
-              child: ElevatedButton(
-                onPressed: (_isValidEmail && _isValidPassword && _passwordsMatch) ? nextStep : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6246EA),
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+          child: Column(
+            children: [
+              ClipPath(
+                clipper: TopCurveClipper(),
+                child: Container(
+                  height: 255,
+                  color: Color(0xFF6246EA),
+                  child: Center(
+                    child: ParadeProgressBar(
+                      currentStep: currentStep,
+                    ),
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Consistent heading for email
+              Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15),
                 child: const Text(
-                  "Next",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500),
+                  "What's your email?",
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-            child: const Text(
-              "Already have an account? Login",
-              style: TextStyle(
-                color: Color(0xFF6246EA),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: 360,
+                child: TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  onChanged: (_) {
+                    _validateEmailField();
+                    setState(() {
+                      errorMessage = null; // clear error on input change
+                    });
+                  },
+                  onEditingComplete: _validateEmailField,
+                  decoration: InputDecoration(
+                    hintText: "Email address*",
+                    errorText: emailError,
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                      borderSide: BorderSide.none,
+                    ),
+                    fillColor: const Color.fromARGB(255, 243, 243, 243),
+                    filled: true,
+                    suffixIcon: (_emailController.text.isNotEmpty && emailError == null)
+                        ? Icon(Icons.check_circle, color: Colors.green)
+                        : (_emailController.text.isNotEmpty && emailError != null)
+                            ? Icon(Icons.error, color: Colors.red)
+                            : null,
+                  ),
+                ),
               ),
-            ),
+
+              const SizedBox(height: 30),
+
+              // Consistent heading for password
+              Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15),
+                child: const Text(
+                  "Enter a Password!",
+                  style: TextStyle(fontSize: 28.5, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 360,
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  onChanged: (_) {
+                    _validatePasswordFields();
+                    setState(() {
+                      errorMessage = null; // clear error on input change
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: "Password*",
+                    errorText: passwordError,
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                      borderSide: BorderSide.none,
+                    ),
+                    fillColor: const Color.fromARGB(255, 243, 243, 243),
+                    filled: true,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              SizedBox(
+                width: 360,
+                child: TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  onChanged: (_) {
+                    _validatePasswordFields();
+                    setState(() {
+                      errorMessage = null; // clear error on input change
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: "Confirm Password*",
+                    errorText: confirmPasswordError,
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                      borderSide: BorderSide.none,
+                    ),
+                    fillColor: const Color.fromARGB(255, 243, 243, 243),
+                    filled: true,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Show error message if present
+              if (errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                  ),
+                ),
+
+              SizedBox(height: 20), // Give space before button for scrolling
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0, left: 16, right: 16),
+                child: SizedBox(
+                  width: 360,
+                  child: ElevatedButton(
+                    onPressed: (_isValidEmail && _isValidPassword && _passwordsMatch) ? nextStep : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6246EA),
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text(
+                      "Next",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: const Text(
+                  "Already have an account? Login",
+                  style: TextStyle(
+                    color: Color(0xFF6246EA),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+            ],
           ),
-          SizedBox(height: 20),
-        ],
+        ),
       ),
     );
   }

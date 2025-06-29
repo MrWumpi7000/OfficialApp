@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, '/check_in');
+                    Navigator.pushNamed(context, '/feature/checkin');
                   },
                   child: Card(
                     margin: EdgeInsets.symmetric(horizontal: 20),

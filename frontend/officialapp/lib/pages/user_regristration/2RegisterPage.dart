@@ -56,109 +56,122 @@ class _RegisterPage2State extends State<RegisterPage2> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true, // Explicitly allow resizing
       body: SafeArea(
-        child: Column(
-          children: [
-            ClipPath(
-              clipper: TopCurveClipper(),
-              child: Container(
-                height: 255,
-                color: Color(0xFF6246EA),
-                child: Center(
-                  child: ParadeProgressBar(
-                    currentStep: currentStep,
-                  ),
-                ),
-              ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 30, // for keyboard
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
             ),
-            const SizedBox(height: 24),
-            // Title section
-            const Text(
-              "Verify your email",
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            const SizedBox(
-              width: 250,
-              child: Text(
-                "Please enter the verification code sent to your email address.",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 32),
-            // 6-digit code input
-            SizedBox(
-              width: 300,
-              height: 60,
-              child: SixDigitCodeInput(
-                onChanged: onCodeChanged,
-              ),
-            ),
-            // Show error message if code is wrong
-            if (errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: Text(
-                  errorMessage!,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            const Spacer(),
-            // Only ONE row of navigation buttons at the bottom
-            Padding(
-              padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: IntrinsicHeight(
+              child: Column(
                 children: [
-                  // Back always enabled
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: prevStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6246EA),
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  ClipPath(
+                    clipper: TopCurveClipper(),
+                    child: Container(
+                      height: 255,
+                      color: Color(0xFF6246EA),
+                      child: Center(
+                        child: ParadeProgressBar(
+                          currentStep: currentStep,
                         ),
-                      ),
-                      child: const Text(
-                        "Back",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  // Next only enabled if code is 6 digits
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: code.length == 6 ? nextStep : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6246EA),
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  const SizedBox(height: 24),
+                  // Title section
+                  const Text(
+                    "Verify your email",
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  const SizedBox(
+                    width: 250,
+                    child: Text(
+                      "Please enter the verification code sent to your email address.",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  // 6-digit code input
+                  SizedBox(
+                    width: 300,
+                    height: 60,
+                    child: SixDigitCodeInput(
+                      onChanged: onCodeChanged,
+                    ),
+                  ),
+                  // Show error message if code is wrong
+                  if (errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Text(
+                        errorMessage!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
                         ),
                       ),
-                      child: const Text(
-                        "Next",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
-                      ),
+                    ),
+                  Spacer(),
+                  // Only ONE row of navigation buttons at the bottom
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Back always enabled
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: prevStep,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6246EA),
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              "Back",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // Next only enabled if code is 6 digits
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: code.length == 6 ? nextStep : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6246EA),
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              "Next",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

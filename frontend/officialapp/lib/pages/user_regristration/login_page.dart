@@ -89,7 +89,6 @@ class _LoginPage extends State<LoginPage> {
     prefs.setString('email', _emailController.text.trim());
     prefs.setString('password', _passwordController.text.trim());
 
-
     // Replace with your own authentication logic
     if (await AuthService().login()) {
       setState(() {
@@ -116,49 +115,53 @@ class _LoginPage extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Column(
-          children: [
-            ClipPath(
-              clipper: TopCurveClipper(),
-              child: Stack(
-                children: [
-                  Container(
-                    color: const Color(0xFF6246EA),
-                    height: 300,
-                    width: double.infinity,
-                    child: Image.asset(
-                      'assets/StartRegisterPage0.jpg',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    left: 80,
-                    top: 70,
-                    child: RichText(
-                      text: TextSpan(
-                        text: "Welcome back to",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        children: [
-                          TextSpan(text: " Official!", style: TextStyle(color: Colors.orange[300])),
-                        ],
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            children: [
+              ClipPath(
+                clipper: TopCurveClipper(),
+                child: Stack(
+                  children: [
+                    Container(
+                      color: const Color(0xFF6246EA),
+                      height: 300,
+                      width: double.infinity,
+                      child: Image.asset(
+                        'assets/StartRegisterPage0.jpg',
+                        fit: BoxFit.cover,
                       ),
                     ),
-                  )
-                ],
+                    Positioned(
+                      left: 80,
+                      top: 70,
+                      child: RichText(
+                        text: TextSpan(
+                          text: "Welcome back to",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          children: [
+                            TextSpan(text: " Official!", style: TextStyle(color: Colors.orange[300])),
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
-            const Text(
-              "Login to your account",
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: Padding(
+              const Text(
+                "Login to your account",
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
                 child: Column(
                   children: [
@@ -234,7 +237,6 @@ class _LoginPage extends State<LoginPage> {
                           style: const TextStyle(color: Colors.red, fontSize: 16),
                         ),
                       ),
-                    // Row for Register and Forgot Password
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -269,37 +271,37 @@ class _LoginPage extends State<LoginPage> {
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
-              child: SizedBox(
-                width: 325,
-                child: ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : (_isValidEmail && _isValidPassword ? _login : null),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6246EA),
-                    minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
+                child: SizedBox(
+                  width: 325,
+                  child: ElevatedButton(
+                    onPressed: _isLoading
+                        ? null
+                        : (_isValidEmail && _isValidPassword ? _login : null),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6246EA),
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : const Text(
+                            "Login",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500),
+                          ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        )
-                      : const Text(
-                          "Login",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500),
-                        ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

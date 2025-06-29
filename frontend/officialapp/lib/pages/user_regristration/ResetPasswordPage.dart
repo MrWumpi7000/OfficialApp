@@ -473,32 +473,38 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _buildImageHeader(),
-          const SizedBox(height: 34),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildStepContent(),
-                  if (errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Text(
-                        errorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 16,
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildImageHeader(),
+            const SizedBox(height: 34),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                ),
+                child: Column(
+                  children: [
+                    _buildStepContent(),
+                    if (errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Text(
+                          errorMessage!,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          _buildNavigationButtons(),
-        ],
+            _buildNavigationButtons(),
+          ],
+        ),
       ),
     );
   }

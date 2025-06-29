@@ -16,10 +16,11 @@ import 'pages/user_regristration/4RegisterPage.dart';
 import 'pages/user_regristration/5RegisterPage.dart';
 import 'pages/user_regristration/6RegisterPage.dart';
 import 'pages/user_regristration/ResetPasswordPage.dart';
+import 'pages/features/checkin_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  //SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(MyApp());
   ReloadHandler().init();
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -104,6 +105,12 @@ class MyApp extends StatelessWidget {
       case "/reset-password":
       return MaterialPageRoute(builder: (_) => ResetPasswordPage(),
       settings: settings,);
+
+      case '/feature/checkin':
+        return MaterialPageRoute(
+          builder: (_) => ProtectedPage(child: CheckInPage()),
+          settings: settings,
+        );
       default:
         if (settings.name != null && settings.name!.startsWith('/play/')) {
           final uri = Uri.parse(settings.name!);
@@ -125,12 +132,12 @@ class MyApp extends StatelessWidget {
         }
         return MaterialPageRoute(
         builder: (_) => Scaffold(
-          body: Center(child: Text('Page not found')),
+          body: Center(child: Text('Feature not found')),
         ),
       );
       }
     }
-
+  
   PageRoute _noAnimationRoute(Widget page, RouteSettings settings) {
     return PageRouteBuilder(
       settings: settings,

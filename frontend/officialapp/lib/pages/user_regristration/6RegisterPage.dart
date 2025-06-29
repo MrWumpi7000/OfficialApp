@@ -16,7 +16,7 @@ class _RegisterPage6State extends State<RegisterPage6> {
 
   void nextStep() {
     if (currentStep < 4) setState(() => currentStep++);
-    Navigator.pushReplacementNamed(context, '/register7');
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   void prevStep() {
@@ -25,7 +25,7 @@ class _RegisterPage6State extends State<RegisterPage6> {
   }
 
   void skipStep() {
-    Navigator.pushReplacementNamed(context, '/register7');
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   void _shareCode() {
@@ -53,163 +53,141 @@ class _RegisterPage6State extends State<RegisterPage6> {
     final hasInput = _partnerCode.trim().isNotEmpty;
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Column(
-          children: [
-            ClipPath(
-              clipper: TopCurveClipper(),
-              child: Container(
-                height: 255,
-                color: const Color(0xFF6246EA),
-                child: Center(
-                  child: ParadeProgressBar(
-                    currentStep: currentStep,
-                  ),
-                ),
-              ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-                        child: const Text(
-                          "Invite your partner to make it Official!",
-                          style: TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          "Enter your partner's code",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 36),
-                      SixDigitCodeInput(
-                        onChanged: (code) {
-                          setState(() {
-                            _partnerCode = code;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 40),
-                      Card(
-                        color: const Color(0xFFF6F3FD),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                        child: SizedBox(
-                          width: 300,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "Tap to share your code",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 10),
-                                GestureDetector(
-                                  onTap: _shareCode,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: hasInput
-                                            ? const Color(0xFF6246EA)
-                                            : Colors.grey.shade300,
-                                        width: 1.5,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.withOpacity(0.07),
-                                          blurRadius: 6,
-                                          offset: Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 18, vertical: 10),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.key, color: Color(0xFF6246EA)),
-                                        const SizedBox(width: 10),
-                                        Text(
-                                          _yourCode,
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            color: Color(0xFF6246EA),
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 3,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 18),
-                                        Icon(Icons.ios_share,
-                                            color: Color(0xFF6246EA)),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  bottom: 30.0, left: 16, right: 16),
-              child: Row(
+            child: IntrinsicHeight(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: prevStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6246EA),
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        "Back",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                  ClipPath(
+                    clipper: TopCurveClipper(),
+                    child: Container(
+                      height: 255,
+                      color: const Color(0xFF6246EA),
+                      child: Center(
+                        child: ParadeProgressBar(
+                          currentStep: currentStep,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _partnerCode.length == 6
-                        ? ElevatedButton(
-                            onPressed: nextStep,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+                    child: const Text(
+                      "Invite your partner to make it Official!",
+                      style: TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      "Enter your partner's code",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+                  SixDigitCodeInput(
+                    onChanged: (code) {
+                      setState(() {
+                        _partnerCode = code;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 40),
+                  Card(
+                    color: const Color(0xFFF6F3FD),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                    child: SizedBox(
+                      width: 300,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Tap to share your code",
+                              style: TextStyle(
+                                fontSize: 18,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            GestureDetector(
+                              onTap: _shareCode,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: hasInput
+                                        ? const Color(0xFF6246EA)
+                                        : Colors.grey.shade300,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.07),
+                                      blurRadius: 6,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 18, vertical: 10),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.key, color: Color(0xFF6246EA)),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      _yourCode,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Color(0xFF6246EA),
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 3,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 18),
+                                    Icon(Icons.ios_share,
+                                        color: Color(0xFF6246EA)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: 30.0, left: 16, right: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: prevStep,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF6246EA),
                               minimumSize: const Size.fromHeight(50),
@@ -218,25 +196,7 @@ class _RegisterPage6State extends State<RegisterPage6> {
                               ),
                             ),
                             child: const Text(
-                              "Submit",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          )
-                        : ElevatedButton(
-                            onPressed: skipStep,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.shade400,
-                              minimumSize: const Size.fromHeight(50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            child: const Text(
-                              "Skip",
+                              "Back",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -244,11 +204,54 @@ class _RegisterPage6State extends State<RegisterPage6> {
                               ),
                             ),
                           ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _partnerCode.length == 6
+                              ? ElevatedButton(
+                                  onPressed: nextStep,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF6246EA),
+                                    minimumSize: const Size.fromHeight(50),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    "Submit",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton(
+                                  onPressed: skipStep,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey.shade400,
+                                    minimumSize: const Size.fromHeight(50),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    "Skip",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

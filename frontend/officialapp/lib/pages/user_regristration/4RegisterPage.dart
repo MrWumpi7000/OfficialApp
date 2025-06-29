@@ -46,121 +46,124 @@ class _RegisterPage4State extends State<RegisterPage4> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Column(
-          children: [
-            ClipPath(
-              clipper: TopCurveClipper(),
-              child: Container(
-                height: 255,
-                color: Color(0xFF6246EA),
-                child: Center(
-                  child: ParadeProgressBar(
-                    currentStep: currentStep,
-                  ),
-                ),
-              ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 24),
-                      const Text(
-                        "What's your birthday?",
-                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 20),
-                      SizedBox(
-                        width: 330,
-                        height: 60,
-                        child: DatePickerDropdown(
-                          onDateSelected: (date) {
-                            setState(() {
-                              _selectedDate = date;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      // Only show the info text if user is NOT old enough
-                      if (_selectedDate == null || !_isOldEnough)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center, // <--- center vertically
-                            children: [
-                              Icon(Icons.info, color: Colors.red),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  "You must be at least 18 years old to register for this app. Please ensure that you are of legal age before proceeding.",
-                                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                                  textAlign: TextAlign.left,
-                                  softWrap: true,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
-              child: Row(
+            child: IntrinsicHeight(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: prevStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6246EA),
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  ClipPath(
+                    clipper: TopCurveClipper(),
+                    child: Container(
+                      height: 255,
+                      color: Color(0xFF6246EA),
+                      child: Center(
+                        child: ParadeProgressBar(
+                          currentStep: currentStep,
                         ),
-                      ),
-                      child: const Text(
-                        "Back",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: (_selectedDate != null && _isOldEnough)
-                          ? nextStep
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: (_selectedDate != null && _isOldEnough)
-                            ? const Color(0xFF6246EA)
-                            : Colors.grey.shade400,
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "What's your birthday?",
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  SizedBox(
+                    width: 330,
+                    height: 60,
+                    child: DatePickerDropdown(
+                      onDateSelected: (date) {
+                        setState(() {
+                          _selectedDate = date;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  // Only show the info text if user is NOT old enough
+                  if (_selectedDate == null || !_isOldEnough)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center, // <--- center vertically
+                        children: [
+                          Icon(Icons.info, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "You must be at least 18 years old to register for this app. Please ensure that you are of legal age before proceeding.",
+                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                              textAlign: TextAlign.left,
+                              softWrap: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 30.0, left: 16, right: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: prevStep,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6246EA),
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              "Back",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        "Next",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
-                      ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (_selectedDate != null && _isOldEnough)
+                                ? nextStep
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: (_selectedDate != null && _isOldEnough)
+                                  ? const Color(0xFF6246EA)
+                                  : Colors.grey.shade400,
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              "Next",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
