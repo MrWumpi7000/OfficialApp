@@ -141,7 +141,14 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
     
     six_digit_code = user.six_digit_code if user.six_digit_code else None
     
-    return {"access_token": access_token, "token_type": "bearer", "6-digit_code": six_digit_code}
+    profile_image_base64 = None
+    if user.profile_image_data and os.path.exists(user.profile_image_data):
+        with open(user.profile_image_data, "rb") as image_file:
+            profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+    else:
+        profile_image_base64 = base64.b64encode(open("backend/app/assets/no_profile.jpg", "rb").read()).decode('utf-8')
+
+    return {"access_token": access_token, "token_type": "bearer", "6-digit_code": six_digit_code, "name": user.username, "profile_image_data": profile_image_base64, "profile_image_extension": user.profile_image_extension}
 
 @router.post("/reset-password")
 def reset_password(request: EmailRequest, db: Session = Depends(get_db)):
