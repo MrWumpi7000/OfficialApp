@@ -4,11 +4,12 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:version/version.dart';
+import '../widgets/inbox_message.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class AuthService {
-  final String _baseUrl = 'http://awesom-o.org:8000';
+  static const String _baseUrl = 'http://awesom-o.org:8000';
 
   Future<bool> login() async {
     final url = Uri.parse('$_baseUrl/login');
@@ -27,10 +28,12 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
+      await prefs.clear();
       final data = jsonDecode(response.body);
       final token = data['access_token'];
       final sixDigitCode = data['6-digit_code'];
-      final prefs = await SharedPreferences.getInstance();
+      final partnerEmail = data['partner_email'];
+      await prefs.setString('partner_email', partnerEmail ?? '');
       await prefs.setString('access_token', token);
       await prefs.setString('sixDigitCode', sixDigitCode ?? '');
       await prefs.setString('name', data['name'] ?? '');
@@ -148,6 +151,82 @@ Future<bool> sendResetCode(String email) async {
     // Optionally, you can parse the error message from the response if needed
     return false;
   }
+static Future<List<InboxMessage>> fetchInbox() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('access_token') ?? "";
+
+  final url = Uri.parse("$_baseUrl/inbox/?token=$token");
+
+  final response = await http.get(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'accept': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> data = json.decode(response.body);
+
+    if (data.containsKey('items') && data['items'] is List) {
+      return (data['items'] as List)
+          .map((json) => InboxMessage.fromJson(json))
+          .toList();
+    } else {
+      throw Exception("Invalid inbox format");
+    }
+  } else {
+    throw Exception("Failed to load inbox: ${response.body}");
+  }
+}
+static Future<bool> markMessageRead(int messageId) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('access_token') ?? "";
+
+  final url = Uri.parse("$_baseUrl/inbox/$messageId/mark-read?token=$token");
+
+  final response = await http.post(url, headers: {
+    'Content-Type': 'application/json',
+    'accept': 'application/json',
+  });
+
+  return response.statusCode == 200;
+}
+
+static Future<bool> markMessageUnread(int messageId) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('access_token') ?? "";
+
+  final url = Uri.parse("$_baseUrl/inbox/$messageId/mark-unread?token=$token");
+
+  final response = await http.post(url, headers: {
+    'Content-Type': 'application/json',
+    'accept': 'application/json',
+  });
+
+  return response.statusCode == 200;
+}
+
+static Future<bool> markMessageReadToggle(int messageId, bool isRead) async {
+  return isRead ? await markMessageUnread(messageId) : await markMessageRead(messageId);
+}
+
+static Future<bool> deleteMessage(int messageId) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('access_token') ?? "";
+
+  final url = Uri.parse("$_baseUrl/inbox/$messageId?token=$token");
+
+  final response = await http.delete(url, headers: {
+    'Content-Type': 'application/json',
+    'accept': 'application/json',
+  });
+
+  return response.statusCode == 200;
+}
+
+
+  
   Future<bool> whoAmI() async {
     final url = Uri.parse('$_baseUrl/whoami');
 

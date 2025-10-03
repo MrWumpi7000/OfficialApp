@@ -17,6 +17,7 @@ import 'pages/user_regristration/5RegisterPage.dart';
 import 'pages/user_regristration/6RegisterPage.dart';
 import 'pages/user_regristration/ResetPasswordPage.dart';
 import 'pages/features/checkin_page.dart';
+import 'pages/inbox_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,6 +110,11 @@ class MyApp extends StatelessWidget {
       case '/feature/checkin':
         return MaterialPageRoute(
           builder: (_) => ProtectedPage(child: CheckInPage()),
+          settings: settings,
+        );
+      case '/inbox':
+        return MaterialPageRoute(
+          builder: (_) => ProtectedPage(child: InboxPage()),
           settings: settings,
         );
       default:

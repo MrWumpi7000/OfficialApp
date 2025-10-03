@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/base_scaffold.dart';
+import '../widgets/add_partner_popup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -24,10 +25,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Show a loading indicator if prefs is not yet loaded
     if (prefs == null) {
       return Center(child: CircularProgressIndicator());
     }
+
+    final partnerEmail = prefs!.getString('partner_email') ?? "none";
+    final hasPartner = partnerEmail.isNotEmpty && partnerEmail != "none";
 
     return BaseScaffold(
       currentIndex: 0,
@@ -57,7 +60,8 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(left: 20.0, top: 50.0),
+                          padding:
+                              const EdgeInsets.only(left: 20.0, top: 50.0),
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(50),
@@ -65,7 +69,8 @@ class _HomePageState extends State<HomePage> {
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
-                              child: Icon(Icons.favorite, size: 20, color: const Color(0xFFa082ad)),
+                              child: Icon(Icons.favorite,
+                                  size: 20, color: const Color(0xFFa082ad)),
                             ),
                           ),
                         ),
@@ -74,12 +79,17 @@ class _HomePageState extends State<HomePage> {
                           child: Row(
                             children: [
                               IconButton(
-                                onPressed: () {},
-                                icon: Icon(Icons.notifications, color: Color(0xFF603a62)),
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(
+                                      context, '/inbox');
+                                },
+                                icon: Icon(Icons.notifications,
+                                    color: Color(0xFF603a62)),
                               ),
                               IconButton(
                                 onPressed: () {},
-                                icon: Icon(Icons.settings, color: Color(0xFF603a62)),
+                                icon: Icon(Icons.settings,
+                                    color: Color(0xFF603a62)),
                               ),
                               SizedBox(width: 20),
                             ],
@@ -87,11 +97,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-                    // Centered name horizontally only, not vertically
                     Align(
                       alignment: Alignment.topCenter,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 55.0), // Adjust the vertical position as needed
+                        padding: const EdgeInsets.only(top: 55.0),
                         child: Text(
                           prefs!.getString('name') ?? 'User',
                           style: TextStyle(
@@ -108,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                 Center(
                   child: SizedBox(
                     height: 100,
-                    width: 175, // Adjust width as needed for overlap
+                    width: 175,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -117,18 +126,51 @@ class _HomePageState extends State<HomePage> {
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor: Colors.white,
-                            backgroundImage: prefs!.getString('profile_image_data') != null
-                                ? MemoryImage(base64Decode(prefs!.getString('profile_image_data')!))
-                                : AssetImage('assets/images/default_profile.png') as ImageProvider,
+                            backgroundImage:
+                                prefs!.getString('profile_image_data') != null
+                                    ? MemoryImage(base64Decode(
+                                        prefs!.getString('profile_image_data')!))
+                                    : AssetImage(
+                                            'assets/images/default_profile.png')
+                                        as ImageProvider,
                           ),
                         ),
                         Positioned(
-                          left: 85, // Adjust this value for more or less overlap (should be less than diameter)
+                          left: 85,
                           top: 0,
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor: Colors.white,
-                            child: Icon(Icons.person_add_alt_1, color: Color(0xFFd5a4a8), size: 30),
+                            child: IconButton(
+                              icon: Icon(
+                                hasPartner
+                                    ? Icons.check_circle_outline
+                                    : Icons.person_add_alt_1,
+                                color: hasPartner
+                                    ? Colors.green
+                                    : Color(0xFFd5a4a8),
+                                size: 30,
+                              ),
+                              onPressed: () {
+                                if (hasPartner) {
+                                  print("Has a partner");
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("You already have a partner"),
+                                    ),
+                                  );
+                                } else {
+                                  print("Add partner button clicked");
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: true,
+                                    builder: (BuildContext context) {
+                                      return AddPartnerPopup();
+                                    },
+                                  );
+                                }
+                              },
+                            ),
                           ),
                         ),
                       ],
@@ -139,7 +181,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           SizedBox(height: 20),
-          //Make the text to the left
           Align(
             alignment: Alignment.centerLeft,
             child: Padding(
