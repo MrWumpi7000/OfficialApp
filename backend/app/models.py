@@ -1,7 +1,8 @@
-from sqlalchemy import func, Column, Integer, String, ForeignKey, UniqueConstraint, DateTime, Boolean
+from sqlalchemy import func, Column, Integer, String, ForeignKey, UniqueConstraint, DateTime, Boolean, Text, Enum
 from app.database import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
+import enum
 
 class User(Base):
     __tablename__ = 'users'
@@ -14,6 +15,7 @@ class User(Base):
     profile_image_extension = Column(String, nullable=True)
     six_digit_code = Column(String(6), nullable=True)
     password = Column(String, nullable=False)
+    partner_email = Column(String, ForeignKey('users.email'), nullable=True)
     
 class VerificationCode(Base):
     __tablename__ = "verification_codes"
@@ -32,3 +34,30 @@ class ResetVerificationCode(Base):
 
     def is_expired(self):
         return datetime.utcnow() > self.expires_at
+    
+class InboxMessage(Base):
+    __tablename__ = "inbox_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    message_type = Column(String, nullable=False, default="info")
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class FriendRequestStatus(str, enum.Enum):
+    pending = "pending"
+    accepted = "accepted"
+    rejected = "rejected"
+    canceled = "canceled"
+
+class FriendRequest(Base):
+    __tablename__ = "friend_requests"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_email = Column(String, ForeignKey("users.email"), nullable=False)
+    recipient_email = Column(String, ForeignKey("users.email"), nullable=False)
+    status = Column(Enum(FriendRequestStatus), default=FriendRequestStatus.pending, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
