@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from app.apis import router  # Import the router from apis.py
+from app.apis import router, inbox_router, friend_router  # Import the router from apis.py
 from app.database import Base, engine  # Import Base and engine to create the database tables
 from fastapi.middleware.cors import CORSMiddleware
 from app.models import User  # Import your models to ensure they are registered with SQLAlchemy
@@ -24,3 +24,5 @@ app.add_middleware(
 )
 # Include the router with the API routes
 app.include_router(router)
+app.include_router(inbox_router)
+app.include_router(friend_router)
