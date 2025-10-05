@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:officialapp/services/auth_service.dart';
 import '../widgets/base_scaffold.dart';
 import '../widgets/add_partner_popup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   @override
@@ -11,6 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   SharedPreferences? prefs;
+  int unreadCount = 0;
 
   @override
   void initState() {
@@ -18,19 +21,76 @@ class _HomePageState extends State<HomePage> {
     _loadPreferences();
   }
 
-  void _loadPreferences() async {
-    prefs = await SharedPreferences.getInstance();
-    setState(() {});
+ Future<void> _loadPreferences() async {
+  prefs = await SharedPreferences.getInstance();
+  setState(() {});
+
+  await _fetchPartnerInfo();
+  await _fetchUnreadCount();
+}
+
+Future<void> _fetchPartnerInfo() async {
+  final token = prefs?.getString("access_token") ?? "";
+  final url = Uri.parse("http://awesom-o.org:8000/partner/info?token=$token");
+
+  try {
+    final response = await http.get(url, headers: {
+      "Accept": "application/json",
+    });
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // Save partner email to prefs
+      await prefs?.setString('partner_email', data["partner_email"] ?? "");
+
+      // Save partner profile image to prefs
+      await prefs?.setString('partner_profile_image_data', data["profile_image_data"] ?? "");
+      await prefs?.setString('partner_profile_image_extension', data["profile_image_extension"] ?? "");
+
+      setState(() {});
+    } else {
+      print("Error fetching partner info: ${response.statusCode}");
+    }
+  } catch (e) {
+    print("Exception fetching partner info: $e");
+  }
+}
+
+
+  Future<void> _fetchUnreadCount() async {
+
+    final token = prefs?.getString("access_token") ?? "";
+    final url = Uri.parse(
+        "http://awesom-o.org:8000/inbox/unread/count?token=$token");
+
+    try {
+      final response = await http.get(url, headers: {
+        "Accept": "application/json",
+      });
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          unreadCount = data['unread_count'] ?? 0;
+        });
+      } else {
+        print("Error fetching unread count: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Exception fetching unread count: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (prefs == null) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     final partnerEmail = prefs!.getString('partner_email') ?? "none";
     final hasPartner = partnerEmail.isNotEmpty && partnerEmail != "none";
+    print("Partner email: $partnerEmail, hasPartner: $hasPartner");
 
     return BaseScaffold(
       currentIndex: 0,
@@ -38,7 +98,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Container(
             height: 250,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(15),
                 bottomRight: Radius.circular(15),
@@ -67,31 +127,60 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(50),
                               color: Colors.white,
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4.0),
                               child: Icon(Icons.favorite,
-                                  size: 20, color: const Color(0xFFa082ad)),
+                                  size: 20, color: Color(0xFFa082ad)),
                             ),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(top: 50.0),
+                          padding: const EdgeInsets.only(top: 50.0, right: 10),
                           child: Row(
                             children: [
-                              IconButton(
-                                onPressed: () {
-                                  Navigator.pushReplacementNamed(
-                                      context, '/inbox');
-                                },
-                                icon: Icon(Icons.notifications,
-                                    color: Color(0xFF603a62)),
+                              Stack(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.pushReplacementNamed(
+                                          context, '/inbox');
+                                    },
+                                    icon: const Icon(Icons.notifications,
+                                        color: Color(0xFF603a62)),
+                                  ),
+                                  if (unreadCount > 0)
+                                    Positioned(
+                                      right: 6,
+                                      top: 6,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.redAccent,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Text(
+                                          '$unreadCount',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                               IconButton(
                                 onPressed: () {},
-                                icon: Icon(Icons.settings,
+                                icon: const Icon(Icons.settings,
                                     color: Color(0xFF603a62)),
                               ),
-                              SizedBox(width: 20),
+                              const SizedBox(width: 20),
                             ],
                           ),
                         ),
@@ -103,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.only(top: 55.0),
                         child: Text(
                           prefs!.getString('name') ?? 'User',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20,
                             color: Color(0xFF603a62),
                             fontWeight: FontWeight.bold,
@@ -113,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Center(
                   child: SizedBox(
                     height: 100,
@@ -129,50 +218,51 @@ class _HomePageState extends State<HomePage> {
                             backgroundImage:
                                 prefs!.getString('profile_image_data') != null
                                     ? MemoryImage(base64Decode(
-                                        prefs!.getString('profile_image_data')!))
-                                    : AssetImage(
+                                        prefs!.getString(
+                                            'profile_image_data')!))
+                                    : const AssetImage(
                                             'assets/images/default_profile.png')
                                         as ImageProvider,
                           ),
                         ),
                         Positioned(
-                          left: 85,
-                          top: 0,
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Colors.white,
-                            child: IconButton(
-                              icon: Icon(
-                                hasPartner
-                                    ? Icons.check_circle_outline
-                                    : Icons.person_add_alt_1,
-                                color: hasPartner
-                                    ? Colors.green
-                                    : Color(0xFFd5a4a8),
-                                size: 30,
-                              ),
-                              onPressed: () {
-                                if (hasPartner) {
-                                  print("Has a partner");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("You already have a partner"),
-                                    ),
-                                  );
-                                } else {
-                                  print("Add partner button clicked");
-                                  showDialog(
-                                    context: context,
-                                    barrierDismissible: true,
-                                    builder: (BuildContext context) {
-                                      return AddPartnerPopup();
-                                    },
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        ),
+  left: 85,
+  top: 0,
+  child: CircleAvatar(
+    radius: 50,
+    backgroundColor: Colors.white,
+    backgroundImage: prefs!.getString('partner_profile_image_data') != null &&
+            prefs!.getString('partner_profile_image_data')!.isNotEmpty
+        ? MemoryImage(base64Decode(prefs!.getString('partner_profile_image_data')!))
+        : null,
+    child: prefs!.getString('partner_profile_image_data') == null ||
+            prefs!.getString('partner_profile_image_data')!.isEmpty
+        ? IconButton(
+            icon: Icon(
+              hasPartner ? Icons.check_circle_outline : Icons.person_add_alt_1,
+              color: hasPartner ? Colors.green : const Color(0xFFd5a4a8),
+              size: 30,
+            ),
+            onPressed: () {
+              if (hasPartner) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("You already have a partner")),
+                );
+              } else {
+                showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (BuildContext context) {
+                    return const AddPartnerPopup();
+                  },
+                );
+              }
+            },
+          )
+        : null,
+  ),
+)
+
                       ],
                     ),
                   ),
@@ -180,12 +270,12 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Align(
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.only(left: 12.0),
-              child: Text(
+              child: const Text(
                 'Your Daily Tasks',
                 style: TextStyle(
                   fontSize: 18,
@@ -195,50 +285,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          SizedBox(height: 20),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/feature/checkin');
-                  },
-                  child: Card(
-                    margin: EdgeInsets.symmetric(horizontal: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: SizedBox(
-                      width: 120,
-                      height: 125,
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Image.asset(
-                              'assets/checkin_logo.png',
-                              height: 80,
-                              width: 75,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          Text(
-                            'Check in',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Color(0xFF603a62),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 20),
         ],
       ),
     );

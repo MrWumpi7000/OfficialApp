@@ -5,7 +5,7 @@ class InboxMessage {
   final String title;
   final String message;
   final String messageType;
-  bool isRead; // ✅ make mutable
+  bool isRead;
   final DateTime createdAt;
 
   InboxMessage({
