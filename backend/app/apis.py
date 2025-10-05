@@ -49,7 +49,7 @@ def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
     profile_image_extension = request.profile_image_extension.lower() if request.profile_image_extension else None
 
     # Default to no_profile.jpg
-    default_image_path = "backend/app/assets/no_profile.jpg"
+    default_image_path = "app/assets/no_profile.jpg"
     profile_image_data = default_image_path
 
     db_user = User(
@@ -146,7 +146,7 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
         with open(user.profile_image_data, "rb") as image_file:
             profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
     else:
-        profile_image_base64 = base64.b64encode(open("backend/app/assets/no_profile.jpg", "rb").read()).decode('utf-8')
+        profile_image_base64 = base64.b64encode(open("app/assets/no_profile.jpg", "rb").read()).decode('utf-8')
 
     return {"access_token": access_token, "token_type": "bearer", "6-digit_code": six_digit_code, "name": user.username, "partner_email": user.partner_email, "profile_image_data": profile_image_base64, "profile_image_extension": user.profile_image_extension}
 
@@ -420,32 +420,35 @@ def send_friend_request(
     if existing_request:
         raise HTTPException(status_code=400, detail="You already have a pending request")
 
+    # CREATE FRIEND REQUEST
     request = FriendRequest(sender_email=current_user.email, recipient_email=recipient.email)
     db.add(request)
     db.commit()
     db.refresh(request)
 
-    # Inbox for recipient
+    # CREATE INBOX MESSAGE FOR RECIPIENT
     db.add(InboxMessage(
         recipient_id=recipient.id,
         sender_id=current_user.id,
         title="Friend request",
         message=f"{current_user.username} added you. Enter their six-digit code to accept.",
-        message_type="friend_request"
+        message_type="friend_request_incoming",
+        friend_request_id=request.id
     ))
 
-    # Inbox for sender
+    # CREATE INBOX MESSAGE FOR SENDER
     db.add(InboxMessage(
         recipient_id=current_user.id,
         sender_id=recipient.id,
         title="Friend request sent",
         message=f"You added {recipient.username}. Waiting for acceptance.",
-        message_type="friend_request"
+        message_type="friend_request_outgoing",
+        friend_request_id=request.id
     ))
 
     db.commit()
-
     return {"detail": "Friend request sent"}
+
 
 @friend_router.post("/accept/{message_id}", response_model=dict)
 def accept_request(
@@ -453,54 +456,52 @@ def accept_request(
     db: Session = Depends(get_db),
     current_user_email: str = Depends(whoami)
 ):
-    current_user = db.query(User).filter(User.email == current_user_email).first()
-    if not current_user:
-        raise HTTPException(status_code=404, detail="User not found")
-
     inbox_message = db.query(InboxMessage).filter(InboxMessage.id == message_id).first()
-    if not inbox_message or inbox_message.recipient_id != current_user.id:
+    if not inbox_message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    if inbox_message.message_type != "friend_request":
+    current_user = db.query(User).filter(User.id == inbox_message.recipient_id).first()
+    if not current_user or current_user.email != current_user_email:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    if inbox_message.message_type != "friend_request_incoming":
         raise HTTPException(status_code=400, detail="Invalid message type")
 
-    sender_user = db.query(User).filter(User.id == inbox_message.sender_id).first()
+    request = db.query(FriendRequest).filter(FriendRequest.id == inbox_message.friend_request_id).first()
+    if not request or request.status != FriendRequestStatus.pending:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+
+    sender_user = db.query(User).filter(User.email == request.sender_email).first()
     if not sender_user:
         raise HTTPException(status_code=404, detail="Sender not found")
-
-    request = db.query(FriendRequest).filter(
-        FriendRequest.sender_email == sender_user.email,
-        FriendRequest.recipient_email == current_user.email,
-        FriendRequest.status == FriendRequestStatus.pending
-    ).first()
-
-    if not request:
-        raise HTTPException(status_code=404, detail="Friend request not found")
 
     # Store partner relationship
     current_user.partner_email = sender_user.email
     sender_user.partner_email = current_user.email
-
     request.status = FriendRequestStatus.accepted
     db.commit()
 
-    # Delete both inbox messages
-    db.query(InboxMessage).filter(
-        ((InboxMessage.sender_id == sender_user.id) & (InboxMessage.recipient_id == current_user.id)) |
-        ((InboxMessage.sender_id == current_user.id) & (InboxMessage.recipient_id == sender_user.id))
-    ).delete(synchronize_session=False)
+    # Delete both friend request messages
+    db.query(InboxMessage).filter(InboxMessage.friend_request_id == request.id).delete()
 
-    # Send acceptance message to sender
+    # Send info messages to both users
     db.add(InboxMessage(
         recipient_id=sender_user.id,
         sender_id=current_user.id,
         title="Friend request accepted",
-        message=f"{current_user.username} has accepted your friend request!",
-        message_type="friend_request"
+        message=f"{current_user.username} accepted your friend request.",
+        message_type="info"
+    ))
+    db.add(InboxMessage(
+        recipient_id=current_user.id,
+        sender_id=sender_user.id,
+        title="Friend request accepted",
+        message=f"You accepted {sender_user.username}'s friend request.",
+        message_type="info"
     ))
     db.commit()
 
-    return {"detail": "Friend request accepted and partner relationship stored"}
+    return {"detail": "Friend request accepted"}
 
 
 @friend_router.post("/reject/{message_id}", response_model=dict)
@@ -509,51 +510,47 @@ def reject_request(
     db: Session = Depends(get_db),
     current_user_email: str = Depends(whoami)
 ):
-    current_user = db.query(User).filter(User.email == current_user_email).first()
-    if not current_user:
-        raise HTTPException(status_code=404, detail="User not found")
-
     inbox_message = db.query(InboxMessage).filter(InboxMessage.id == message_id).first()
-    if not inbox_message or inbox_message.recipient_id != current_user.id:
+    if not inbox_message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    if inbox_message.message_type != "friend_request":
+    current_user = db.query(User).filter(User.id == inbox_message.recipient_id).first()
+    if not current_user or current_user.email != current_user_email:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    if inbox_message.message_type != "friend_request_incoming":
         raise HTTPException(status_code=400, detail="Invalid message type")
 
-    sender_user = db.query(User).filter(User.id == inbox_message.sender_id).first()
+    request = db.query(FriendRequest).filter(FriendRequest.id == inbox_message.friend_request_id).first()
+    if not request or request.status != FriendRequestStatus.pending:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+
+    sender_user = db.query(User).filter(User.email == request.sender_email).first()
     if not sender_user:
         raise HTTPException(status_code=404, detail="Sender not found")
 
-    request = db.query(FriendRequest).filter(
-        FriendRequest.sender_email == sender_user.email,
-        FriendRequest.recipient_email == current_user.email,
-        FriendRequest.status == FriendRequestStatus.pending
-    ).first()
-
-    if not request:
-        raise HTTPException(status_code=404, detail="Friend request not found")
-
-    # Delete both inbox messages
-    db.query(InboxMessage).filter(
-        ((InboxMessage.sender_id == sender_user.id) & (InboxMessage.recipient_id == current_user.id)) |
-        ((InboxMessage.sender_id == current_user.id) & (InboxMessage.recipient_id == sender_user.id))
-    ).delete(synchronize_session=False)
-
-    # Delete friend request
+    db.query(InboxMessage).filter(InboxMessage.friend_request_id == request.id).delete()
     db.delete(request)
     db.commit()
 
-    # Send rejection message to sender
     db.add(InboxMessage(
         recipient_id=sender_user.id,
         sender_id=current_user.id,
         title="Friend request rejected",
-        message=f"{current_user.username} has rejected your friend request.",
-        message_type="friend_request"
+        message=f"{current_user.username} rejected your friend request.",
+        message_type="info"
+    ))
+    db.add(InboxMessage(
+        recipient_id=current_user.id,
+        sender_id=sender_user.id,
+        title="Friend request rejected",
+        message=f"You rejected {sender_user.username}'s friend request.",
+        message_type="info"
     ))
     db.commit()
 
-    return {"detail": "Friend request rejected and messages deleted"}
+    return {"detail": "Friend request rejected"}
+
 
 @friend_router.post("/cancel/{message_id}", response_model=dict)
 def cancel_request(
@@ -561,48 +558,86 @@ def cancel_request(
     db: Session = Depends(get_db),
     current_user_email: str = Depends(whoami)
 ):
-    current_user = db.query(User).filter(User.email == current_user_email).first()
-    if not current_user:
-        raise HTTPException(status_code=404, detail="User not found")
-
     inbox_message = db.query(InboxMessage).filter(InboxMessage.id == message_id).first()
-    if not inbox_message or inbox_message.sender_id != current_user.id:
+    if not inbox_message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    if inbox_message.message_type != "friend_request":
+    current_user = db.query(User).filter(User.id == inbox_message.sender_id).first()
+    if not current_user or current_user.email != current_user_email:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    if inbox_message.message_type != "friend_request_outgoing":
         raise HTTPException(status_code=400, detail="Invalid message type")
 
-    recipient_user = db.query(User).filter(User.id == inbox_message.recipient_id).first()
+    request = db.query(FriendRequest).filter(FriendRequest.id == inbox_message.friend_request_id).first()
+    if not request or request.status != FriendRequestStatus.pending:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+
+    recipient_user = db.query(User).filter(User.email == request.recipient_email).first()
     if not recipient_user:
         raise HTTPException(status_code=404, detail="Recipient not found")
 
-    request = db.query(FriendRequest).filter(
-        FriendRequest.sender_email == current_user.email,
-        FriendRequest.recipient_email == recipient_user.email,
-        FriendRequest.status == FriendRequestStatus.pending
-    ).first()
-
-    if not request:
-        raise HTTPException(status_code=404, detail="Friend request not found")
-
-    # Delete both inbox messages
-    db.query(InboxMessage).filter(
-        ((InboxMessage.sender_id == current_user.id) & (InboxMessage.recipient_id == recipient_user.id)) |
-        ((InboxMessage.sender_id == recipient_user.id) & (InboxMessage.recipient_id == current_user.id))
-    ).delete(synchronize_session=False)
-
-    # Delete friend request
+    db.query(InboxMessage).filter(InboxMessage.friend_request_id == request.id).delete()
     db.delete(request)
     db.commit()
 
-    # Send cancelation message to recipient
     db.add(InboxMessage(
         recipient_id=recipient_user.id,
         sender_id=current_user.id,
         title="Friend request canceled",
-        message=f"{current_user.username} has canceled the friend request.",
-        message_type="friend_request"
+        message=f"{current_user.username} canceled the friend request.",
+        message_type="info"
+    ))
+    db.add(InboxMessage(
+        recipient_id=current_user.id,
+        sender_id=recipient_user.id,
+        title="Friend request canceled",
+        message=f"You canceled the friend request to {recipient_user.username}.",
+        message_type="info"
     ))
     db.commit()
 
-    return {"detail": "Friend request canceled and messages deleted"}
+    return {"detail": "Friend request canceled"}
+
+partner_router = APIRouter(prefix="/partner", tags=["partner"])
+
+
+@partner_router.get("/email", response_model=dict)
+def get_partner_email(
+    db: Session = Depends(get_db),
+    current_user_email: str = Depends(whoami)
+):
+    user = db.query(User).filter(User.email == current_user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"partner_email": user.partner_email}
+
+
+@partner_router.get("/info")
+def get_partner_info(db: Session = Depends(get_db), current_user_email: str = Depends(whoami)):
+    user = db.query(User).filter(User.email == current_user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.partner_email:
+        return {"partner_email": None, "profile_image_data": None, "profile_image_extension": None}
+
+    partner = db.query(User).filter(User.email == user.partner_email).first()
+    if not partner:
+        return {"partner_email": None, "profile_image_data": None, "profile_image_extension": None}
+
+    profile_image_data = None
+    if partner.profile_image_data:
+        try:
+            image_path = partner.profile_image_data
+            with open(image_path, "rb") as image_file:
+                profile_image_data = base64.b64encode(image_file.read()).decode("utf-8")
+        except Exception as e:
+            print(f"Error reading image: {e}")
+
+    return {
+        "partner_email": partner.email,
+        "profile_image_data": profile_image_data,
+        "profile_image_extension": partner.profile_image_extension
+    }

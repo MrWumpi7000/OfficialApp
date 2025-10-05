@@ -35,6 +35,22 @@ class ResetVerificationCode(Base):
     def is_expired(self):
         return datetime.utcnow() > self.expires_at
     
+class FriendRequestStatus(str, enum.Enum):
+    pending = "pending"
+    accepted = "accepted"
+    rejected = "rejected"
+    canceled = "canceled"
+
+
+class FriendRequest(Base):
+    __tablename__ = "friend_requests"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_email = Column(String, ForeignKey("users.email"), nullable=False)
+    recipient_email = Column(String, ForeignKey("users.email"), nullable=False)
+    status = Column(Enum(FriendRequestStatus), default=FriendRequestStatus.pending, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class InboxMessage(Base):
     __tablename__ = "inbox_messages"
 
@@ -47,17 +63,4 @@ class InboxMessage(Base):
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-class FriendRequestStatus(str, enum.Enum):
-    pending = "pending"
-    accepted = "accepted"
-    rejected = "rejected"
-    canceled = "canceled"
-
-class FriendRequest(Base):
-    __tablename__ = "friend_requests"
-    id = Column(Integer, primary_key=True, index=True)
-    sender_email = Column(String, ForeignKey("users.email"), nullable=False)
-    recipient_email = Column(String, ForeignKey("users.email"), nullable=False)
-    status = Column(Enum(FriendRequestStatus), default=FriendRequestStatus.pending, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
+    friend_request_id = Column(Integer, ForeignKey("friend_requests.id"), nullable=True)
