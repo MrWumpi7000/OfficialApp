@@ -62,6 +62,57 @@ class _InboxPageState extends State<InboxPage> {
     );
   }
 
+  Widget _buildActionButtons(InboxMessage msg) {
+    print(msg);
+    if (msg.messageType == "friend_request_incoming") {
+      print(msg);
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  bool success = await AuthService.acceptFriendRequest(msg.id);
+                  if (success) _refreshInbox();
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                child: const Text("Accept"),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  bool success = await AuthService.declineFriendRequest(msg.id);
+                  if (success) _refreshInbox();
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text("Decline"),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (msg.messageType == "friend_request_outgoing") {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: ElevatedButton(
+          onPressed: () async {
+            bool success = await AuthService.cancelFriendRequest(msg.id);
+            if (success) _refreshInbox();
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+          child: const Text("Cancel"),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,61 +191,68 @@ class _InboxPageState extends State<InboxPage> {
                       return false;
                     },
                     onDismissed: (_) => _refreshInbox(),
-                    child: GestureDetector(
-                      onTap: () {
-                        _openMessage(msg);
-                        AuthService.markMessageReadToggle(msg.id, msg.isRead);
-                        setState(() {
-                          msg.isRead = true;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              blurRadius: 5,
-                              offset: const Offset(0, 2),
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            _openMessage(msg);
+                            AuthService.markMessageReadToggle(msg.id, msg.isRead);
+                            setState(() {
+                              msg.isRead = true;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                          title: Row(
-                            children: [
-                              if (!msg.isRead)
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.blueAccent,
+                            child: ListTile(
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                              title: Row(
+                                children: [
+                                  if (!msg.isRead)
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.blueAccent,
+                                      ),
+                                      margin: const EdgeInsets.only(right: 8),
+                                    ),
+                                  Expanded(
+                                    child: Text(
+                                      msg.title,
+                                      style: TextStyle(
+                                        fontWeight:
+                                            msg.isRead ? FontWeight.normal : FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
-                                  margin: const EdgeInsets.only(right: 8),
-                                ),
-                              Expanded(
-                                child: Text(
-                                  msg.title,
-                                  style: TextStyle(
-                                    fontWeight: msg.isRead ? FontWeight.normal : FontWeight.bold,
-                                  ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                          subtitle: Text(
-                            msg.message,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Text(
-                            msg.createdAt.toString(),
-                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              subtitle: Text(
+                                msg.message,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: Text(
+                                msg.createdAt.toString(),
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        _buildActionButtons(msg),
+                      ],
                     ),
                   ),
                 );

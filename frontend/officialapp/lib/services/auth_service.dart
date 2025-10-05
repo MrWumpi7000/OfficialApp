@@ -65,6 +65,7 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
+      await prefs.clear();
       final data = jsonDecode(response.body);
       final token = data['access_token'];
       final sixDigitCode = data['6-digit_code'];
@@ -224,6 +225,91 @@ static Future<bool> deleteMessage(int messageId) async {
 
   return response.statusCode == 200;
 }
+  static Future<bool> sendFriendRequest(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token') ?? "";
+    final url = Uri.parse("$_baseUrl/friends/add/$code?token=$token");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({}), // empty body like your curl example
+      );
+
+      if (response.statusCode == 200) {
+        // Optionally parse response data
+        return true;
+      } else {
+        print("Error: ${response.statusCode} - ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Exception: $e");
+      return false;
+    }
+  }
+  static Future<bool> acceptFriendRequest(int messageId) async {
+    return _postFriendAction("accept", messageId);
+  }
+
+  static Future<bool> declineFriendRequest(int messageId) async {
+    return _postFriendAction("reject", messageId);
+  }
+
+  static Future<bool> cancelFriendRequest(int messageId) async {
+    return _postFriendAction("cancel", messageId);
+  }
+
+  static Future<bool> _postFriendAction(String action, int messageId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("access_token") ?? "";
+    final url = Uri.parse(
+        "http://awesom-o.org:8000/friends/$action/$messageId?token=$token");
+
+    try {
+      final response = await http.post(url, headers: {"Accept": "application/json"});
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Error in $action friend request: $e");
+      return false;
+    }
+  }
+
+  Future<bool?> getPartnerEmail() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('access_token') ?? "";
+  final url = Uri.parse("http://awesom-o.org:8000/partner/email?token=$token");
+
+  final response = await http.get(url, headers: {
+    "Accept": "application/json",
+  });
+
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> data = json.decode(response.body);
+    prefs.setString('partner_email', data["partner_email"] ?? '');
+    return true;
+  } else {
+    throw Exception("Failed to fetch partner email: ${response.body}");
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   
@@ -307,32 +393,6 @@ static Future<bool> deleteMessage(int messageId) async {
   }
 }
 
-Future<String> sendFriendRequest(String friendUsername) async {
-  final url = Uri.parse('$_baseUrl/add_friend');
-
-  final token = await getToken();
-
-  final response = await http.post(
-    url,
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({
-      'friend_username': friendUsername,
-      'token': token,
-    }),
-  );
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    return data['message'] ?? 'Friend request sent.';
-  } else {
-    throw Exception(
-      'Failed to send friend request: ${response.statusCode}\n${response.body}',
-    );
-  }
-}
   Future<bool> refreshUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
